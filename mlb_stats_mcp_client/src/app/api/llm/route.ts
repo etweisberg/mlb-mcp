@@ -38,7 +38,7 @@ const openai = new OpenAI({
 
 // Model configuration with rate limits (tokens per minute)
 const OPENAI_MODELS = {
-  "gpt-4o-mini": 200_000,
+  "gpt-4o-mini": 120_000,
   "gpt-4.1-nano": 200_000,
   "gpt-4.1-mini": 200_000,
 } as const;
@@ -205,6 +205,7 @@ function truncatePromptForRateLimit(
   model: string
 ): { prompt: string; truncated: boolean } {
   const currentTokens = countTokens(prompt, model);
+  console.log(`Current tokens: ${currentTokens} | Max tokens: ${maxTokens}`);
 
   if (currentTokens <= maxTokens) {
     return { prompt, truncated: false };
@@ -213,29 +214,14 @@ function truncatePromptForRateLimit(
   // Reserve tokens for the truncation message
   const truncationMessage =
     "\n\n[PROMPT TRUNCATED DUE TO RATE LIMITS - This is your final prompt, please provide your best response based on the available information.]";
-  const reservedTokens = countTokens(truncationMessage, model);
-  const availableTokens = maxTokens - reservedTokens;
-
-  if (availableTokens <= 0) {
-    return {
-      prompt: truncationMessage,
-      truncated: true,
-    };
-  }
-
-  // Binary search to find the optimal truncation point
   const encoder = getEncoder(model);
-  const tokens = encoder.encode(prompt);
-
-  if (tokens.length <= availableTokens) {
-    return { prompt, truncated: false };
-  }
-
-  // Truncate to fit available tokens
-  const truncatedTokens = tokens.slice(0, availableTokens);
-  const truncatedText = encoder.decode(truncatedTokens);
-  const truncatedPrompt = truncatedText + truncationMessage;
-
+  const truncationMessageTokens = encoder.encode(truncationMessage);
+  const promptTokens = encoder.encode(prompt);
+  const truncatedTokens = [...truncationMessageTokens, ...promptTokens].slice(
+    0,
+    maxTokens
+  );
+  const truncatedPrompt = encoder.decode(truncatedTokens);
   return { prompt: truncatedPrompt, truncated: true };
 }
 
@@ -253,27 +239,26 @@ function convertToOpenAITools(tools: MCPTool[]) {
 
 // Extract HTML from response
 function extractHTML(content: string): string {
-  // Look for HTML in various formats
-  const htmlPatterns = [
-    /```html\n([\s\S]*?)\n```/i,
-    /```\n(<!DOCTYPE html[\s\S]*?<\/html>)\n```/i,
-    /(<html[\s\S]*?<\/html>)/i,
-    /(<!DOCTYPE html[\s\S]*?<\/html>)/i,
-  ];
-
-  for (const pattern of htmlPatterns) {
-    const match = content.match(pattern);
-    if (match) {
-      return match[1].trim();
-    }
+  // drop everything before the first "<html" or "<!DOCTYPE"
+  const startIdx = content.search(/<!DOCTYPE html|<html/i);
+  if (startIdx >= 0) {
+    content = content.slice(startIdx);
   }
 
-  // If no HTML blocks found, check if the entire response is HTML
-  if (content.includes("<html") || content.includes("<!DOCTYPE")) {
-    return content.trim();
+  // try code‐fence first
+  const fenceRe = /```(?:html)?\s*([\s\S]*?)\s*```/i;
+  const fenceMatch = content.match(fenceRe);
+  if (fenceMatch && fenceMatch[1]) {
+    return fenceMatch[1].trim();
   }
 
-  // Return empty if no HTML found
+  // fallback to a bare HTML match
+  const htmlRe = /<!DOCTYPE html[\s\S]*?<\/html>|<html[\s\S]*?<\/html>/i;
+  const htmlMatch = content.match(htmlRe);
+  if (htmlMatch) {
+    return htmlMatch[0].trim();
+  }
+
   return "";
 }
 
@@ -374,6 +359,54 @@ async function executeToolCall(
   }
 }
 
+function safePushMessage(
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  nextMsg:
+    | OpenAI.Chat.Completions.ChatCompletionMessageParam
+    | OpenAI.Chat.Completions.ChatCompletionMessage,
+  model: OpenAIModel
+): boolean {
+  // flatten content
+  const raw = nextMsg.content ?? "";
+  const contentStr =
+    typeof raw === "string"
+      ? raw
+      : Array.isArray(raw)
+      ? raw
+          .map((p) => ("text" in p && typeof p.text === "string" ? p.text : ""))
+          .join("")
+      : "";
+
+  // check budget
+  const needed = countTokens(contentStr, model);
+  const { allowed, remaining } = checkRateLimit(model, needed);
+
+  // decide what to push
+  const toPush = allowed
+    ? contentStr
+    : (() => {
+        const { prompt, truncated } = truncatePromptForRateLimit(
+          contentStr,
+          remaining,
+          model
+        );
+        if (!truncated) throw new Error("safePushMessage: truncate failed");
+        return prompt;
+      })();
+
+  // build the param‐typed message, casting ensures TS compliance
+  const msg = {
+    role: nextMsg.role as "system" | "user" | "assistant" | "function",
+    content: toPush,
+    ...(nextMsg.role === "function" && "name" in nextMsg && nextMsg.name
+      ? { name: nextMsg.name }
+      : {}),
+  } as OpenAI.Chat.Completions.ChatCompletionMessageParam;
+
+  messages.push(msg);
+  return allowed;
+}
+
 async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
   let mcpClient: Client | null = null;
   try {
@@ -396,12 +429,6 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
     const toolsTokens = countToolsTokens(payload.availableTools, model);
     const estimatedTokens = messagesTokens + toolsTokens;
 
-    console.log(`Token estimation for ${model}:`, {
-      messages: messagesTokens,
-      tools: toolsTokens,
-      total: estimatedTokens,
-    });
-
     // Check rate limit
     const rateLimitCheck = checkRateLimit(model, estimatedTokens);
     let currentPrompt = payload.prompt;
@@ -419,11 +446,11 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
 
       const truncateResult = truncatePromptForRateLimit(
         payload.prompt,
-        Math.max(availableForPrompt, 50), // Minimum 50 tokens
+        availableForPrompt,
         model
       );
       currentPrompt = truncateResult.prompt;
-      isRateLimited = truncateResult.truncated;
+      isRateLimited = true;
     }
 
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
@@ -462,23 +489,21 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
 
     while (iteration < maxIterations) {
       iteration++;
-      console.log(`Chat iteration: ${iteration}`);
+      // Log token usage before each request
+      const currentTokenCount = countMessagesTokens(messages, model);
+      console.log(`Iteration ${iteration} token count: ${currentTokenCount}`);
 
       // Check if this is the final iteration due to rate limits or max iterations
       const isFinalIteration = isRateLimited || iteration >= maxIterations;
 
-      if (isFinalIteration && messages.length > 2) {
-        // Add a final instruction for the last iteration
+      if (isFinalIteration && !isRateLimited) {
+        // Add a final instruction for the last iteration if not rate limited
         messages.push({
           role: "user",
           content:
-            "This is the final response due to rate limits or iteration limits. Please provide your best final answer based on all the information gathered so far.",
+            "This is the final response. Please provide your best final HTML based on all the information gathered so far.",
         });
       }
-
-      // Log token usage before each request
-      const currentTokenCount = countMessagesTokens(messages, model);
-      console.log(`Iteration ${iteration} token count: ${currentTokenCount}`);
 
       const response = await openai.chat.completions.create({
         ...requestOptions,
@@ -490,13 +515,18 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
         throw new Error("No response from OpenAI API");
       }
 
-      // Log actual token usage from the response
+      // Get actual token usage
       if (response.usage) {
         console.log(`Actual token usage:`, response.usage);
+        const tokensUsed = response.usage.total_tokens;
+        const state = rateLimitState.get(model)!;
+        state.tokensUsed = tokensUsed;
       }
 
-      // Add assistant message to conversation
-      messages.push(message);
+      // Perform safe push of message
+      if (!safePushMessage(messages, message, model)) {
+        break;
+      }
 
       // Check if there are tool calls to execute (but not on final iteration)
       if (
@@ -517,25 +547,35 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
               mcpClient
             );
 
-            // Add tool result to conversation
-            messages.push({
-              role: "tool",
-              content: result,
-              tool_call_id: toolCall.id,
-            });
+            const toolMsg: OpenAI.Chat.Completions.ChatCompletionMessageParam =
+              {
+                role: "function",
+                name: toolCall.function.name,
+                content: result,
+              };
+
+            if (!safePushMessage(messages, toolMsg, model)) {
+              break;
+            }
           } catch (toolError) {
             console.error(
               `Tool execution failed for ${toolCall.function.name}:`,
               toolError
             );
             // Add error result to conversation so the LLM can handle it
-            messages.push({
-              role: "tool",
-              content: `Error executing ${toolCall.function.name}: ${
-                toolError instanceof Error ? toolError.message : "Unknown error"
-              }`,
-              tool_call_id: toolCall.id,
-            });
+            const errorToolMsg: OpenAI.Chat.Completions.ChatCompletionMessageParam =
+              {
+                role: "function",
+                content: `Error executing ${toolCall.function.name}: ${
+                  toolError instanceof Error
+                    ? toolError.message
+                    : "Unknown error"
+                }`,
+                name: toolCall.function.name,
+              };
+            if (!safePushMessage(messages, errorToolMsg, model)) {
+              break;
+            }
           }
         }
 
@@ -551,15 +591,13 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
     }
 
     // If we've hit the max iterations, return the last message content
-    console.warn(
-      `OpenAI conversation hit max iterations (${maxIterations}). Returning last response.`
-    );
     const lastMessage = messages[messages.length - 1];
     if (
       lastMessage &&
       lastMessage.role === "assistant" &&
       "content" in lastMessage
     ) {
+      console.warn(`Returning last response: ${lastMessage.content}`);
       return typeof lastMessage.content === "string" ? lastMessage.content : "";
     }
 
@@ -605,6 +643,10 @@ export async function POST(request: NextRequest) {
 
     // Extract HTML from the response
     const htmlResponse = extractHTML(llmResponse);
+
+    console.log(
+      `LLM Response: ${llmResponse} | Extracted HTML: ${htmlResponse}`
+    );
 
     if (!htmlResponse) {
       return NextResponse.json(
