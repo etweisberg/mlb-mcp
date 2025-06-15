@@ -212,7 +212,7 @@ async def get_standings(
 async def get_team_roster(
     team_id: int,
     roster_type: str = "active",
-    season: Optional[int] = None,
+    season: int = 2025,
     date: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
@@ -463,9 +463,7 @@ async def get_available_endpoints() -> Dict[str, Any]:
                     "hydrate",
                     "fields",
                 ],
-                "notes": (
-                    "Call awards endpoint with no parameters to return a list of " "awardIds."
-                ),
+                "notes": ("Call awards endpoint with no parameters to return a list of awardIds."),
             },
             "conferences": {
                 "url": "https://statsapi.mlb.com/api/{ver}/conferences",
@@ -478,7 +476,7 @@ async def get_available_endpoints() -> Dict[str, Any]:
                 "required_params": [],
                 "all_params": ["ver", "divisionId", "leagueId", "sportId", "season"],
                 "notes": (
-                    "Call divisions endpoint with no parameters to return a list of " "divisions."
+                    "Call divisions endpoint with no parameters to return a list of divisions."
                 ),
             },
             "draft": {
@@ -594,7 +592,7 @@ async def get_available_endpoints() -> Dict[str, Any]:
                 "required_params": ["personId", "gamePk"],
                 "all_params": ["ver", "personId", "gamePk", "fields"],
                 "notes": (
-                    "Specify 'current' instead of a gamePk for a player's current " "game stats."
+                    "Specify 'current' instead of a gamePk for a player's current game stats."
                 ),
             },
             "schedule": {
@@ -660,9 +658,7 @@ async def get_available_endpoints() -> Dict[str, Any]:
                     "startDate",
                     "endDate",
                 ],
-                "notes": (
-                    "If no limit is specified, the response will be limited to 50 " "records."
-                ),
+                "notes": ("If no limit is specified, the response will be limited to 50 records."),
             },
             "stats_leaders": {
                 "url": "https://statsapi.mlb.com/api/{ver}/stats/leaders",

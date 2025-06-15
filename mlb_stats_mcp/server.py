@@ -176,7 +176,7 @@ async def get_boxscore(game_id: int, timecode: Optional[str] = None) -> Dict[str
 async def get_team_roster(
     team_id: int,
     roster_type: str = "active",
-    season: Optional[int] = None,
+    season: int = 2025,
     date: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Get the roster for a given team."""

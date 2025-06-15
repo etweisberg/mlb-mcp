@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import {
+  getEncoding,
+  encodingForModel,
+  type TiktokenModel,
+  type Tiktoken,
+} from "js-tiktoken";
 
 interface MCPTool {
   name: string;
@@ -32,9 +38,9 @@ const openai = new OpenAI({
 
 // Model configuration with rate limits (tokens per minute)
 const OPENAI_MODELS = {
-  "gpt-4.1-mini": 200_000,
-  "gpt-4.1-nano": 200_000,
   "gpt-4o-mini": 200_000,
+  "gpt-4.1-nano": 200_000,
+  "gpt-4.1-mini": 200_000,
 } as const;
 
 type OpenAIModel = keyof typeof OPENAI_MODELS;
@@ -48,6 +54,9 @@ interface RateLimitState {
 
 // In-memory rate limit tracking (in production, use Redis or similar)
 const rateLimitState = new Map<OpenAIModel, RateLimitState>();
+
+// Cache for js-tiktoken encoders to avoid repeated initialization
+const encoderCache = new Map<string, Tiktoken>();
 
 // Initialize rate limit state for all models
 Object.keys(OPENAI_MODELS).forEach((model) => {
@@ -63,10 +72,102 @@ function validateOpenAIModel(model: string): model is OpenAIModel {
   return model in OPENAI_MODELS;
 }
 
-// Estimate token count (rough approximation)
-function estimateTokenCount(text: string): number {
-  // Rough estimate: 1 token ≈ 4 characters for English text
-  return Math.ceil(text.length / 4);
+// Get or create js-tiktoken encoder for a model
+function getEncoder(model: string): Tiktoken {
+  if (encoderCache.has(model)) {
+    const cachedEncoder = encoderCache.get(model);
+    if (cachedEncoder) {
+      return cachedEncoder;
+    }
+  }
+
+  let encoder: Tiktoken;
+  const encodingName = "o200k_base";
+  try {
+    // Try to get encoding specifically for the model if it's a valid js-tiktoken model
+    encoder = encodingForModel(model as TiktokenModel);
+    console.log(`Encoder created: ${encoder}`);
+  } catch (error) {
+    console.warn(
+      `Using fallback encoding ${encodingName} for model ${model} - ${error}`
+    );
+    encoder = getEncoding(encodingName);
+  }
+
+  encoderCache.set(model, encoder);
+  return encoder;
+}
+
+// Accurate token count using js-tiktoken
+function countTokens(text: string, model: string): number {
+  try {
+    const encoder = getEncoder(model);
+    const tokens = encoder.encode(text);
+    return tokens.length;
+  } catch (error) {
+    console.error(`Error counting tokens for model ${model}:`, error);
+    // Fallback to rough estimation
+    return Math.ceil(text.length / 4);
+  }
+}
+
+// Count tokens for messages array (includes message formatting overhead)
+function countMessagesTokens(
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+  model: string
+): number {
+  const encoder = getEncoder(model);
+  let totalTokens = 0;
+
+  for (const message of messages) {
+    // Account for message formatting tokens
+    totalTokens += 4; // Base tokens per message (role, content wrapper, etc.)
+
+    if (message.role) {
+      totalTokens += encoder.encode(message.role).length;
+    }
+
+    if ("content" in message && typeof message.content === "string") {
+      totalTokens += encoder.encode(message.content).length;
+    }
+
+    if ("name" in message && message.name) {
+      totalTokens += encoder.encode(message.name).length;
+      totalTokens += 1; // Additional token for name field
+    }
+  }
+
+  // Add tokens for function calling overhead if tools are present
+  totalTokens += 2; // Priming tokens for assistant response
+
+  return totalTokens;
+}
+
+// Count tokens for tools (function definitions)
+function countToolsTokens(tools: MCPTool[], model: string): number {
+  if (tools.length === 0) return 0;
+
+  const encoder = getEncoder(model);
+  let totalTokens = 0;
+
+  for (const tool of tools) {
+    // Serialize the tool definition as it would appear to the model
+    const toolDefinition = JSON.stringify({
+      type: "function",
+      function: {
+        name: tool.name,
+        description: tool.description || `Execute ${tool.name}`,
+        parameters: tool.inputSchema || {},
+      },
+    });
+
+    totalTokens += encoder.encode(toolDefinition).length;
+  }
+
+  // Add overhead for tools structure
+  totalTokens += tools.length * 3; // Approximate overhead per tool
+
+  return totalTokens;
 }
 
 // Check and update rate limit
@@ -97,25 +198,43 @@ function checkRateLimit(
   return { allowed: !wouldExceed, remaining };
 }
 
-// Truncate prompt to fit within rate limits
+// Truncate prompt to fit within rate limits using js-tiktoken
 function truncatePromptForRateLimit(
   prompt: string,
-  maxTokens: number
+  maxTokens: number,
+  model: string
 ): { prompt: string; truncated: boolean } {
-  const estimatedTokens = estimateTokenCount(prompt);
+  const currentTokens = countTokens(prompt, model);
 
-  if (estimatedTokens <= maxTokens) {
+  if (currentTokens <= maxTokens) {
     return { prompt, truncated: false };
   }
 
-  // Reserve some tokens for the truncation message
-  const reservedTokens = 50;
-  const availableTokens = maxTokens - reservedTokens;
-  const truncatedLength = Math.floor(availableTokens * 4); // Convert back to characters
-
-  const truncatedPrompt =
-    prompt.substring(0, truncatedLength) +
+  // Reserve tokens for the truncation message
+  const truncationMessage =
     "\n\n[PROMPT TRUNCATED DUE TO RATE LIMITS - This is your final prompt, please provide your best response based on the available information.]";
+  const reservedTokens = countTokens(truncationMessage, model);
+  const availableTokens = maxTokens - reservedTokens;
+
+  if (availableTokens <= 0) {
+    return {
+      prompt: truncationMessage,
+      truncated: true,
+    };
+  }
+
+  // Binary search to find the optimal truncation point
+  const encoder = getEncoder(model);
+  const tokens = encoder.encode(prompt);
+
+  if (tokens.length <= availableTokens) {
+    return { prompt, truncated: false };
+  }
+
+  // Truncate to fit available tokens
+  const truncatedTokens = tokens.slice(0, availableTokens);
+  const truncatedText = encoder.decode(truncatedTokens);
+  const truncatedPrompt = truncatedText + truncationMessage;
 
   return { prompt: truncatedPrompt, truncated: true };
 }
@@ -228,38 +347,19 @@ async function executeToolCall(
     // Check for successful data retrieval
     const hasValidContent = Array.isArray(result.content)
       ? result.content.length > 0
-      : result.content && typeof result.content === 'object';
+      : result.content && typeof result.content === "object";
 
     if (!hasValidContent) {
-      console.warn(`Tool ${toolName} returned empty content array or invalid data structure`);
+      console.warn(
+        `Tool ${toolName} returned empty content array or invalid data structure`
+      );
     }
-
-    // Check for and log image_base64 fields
-    const contentStr = JSON.stringify(result.content);
-    if (contentStr.includes('image_base64')) {
-      console.log(`Tool ${toolName} returned response containing image data`);
-
-      // Count how many images were returned
-      const imageMatches = contentStr.match(/"image_base64":/g);
-      const imageCount = imageMatches ? imageMatches.length : 0;
-      console.log(`Found ${imageCount} image(s) in response from ${toolName}`);
-
-      // Log first 100 chars of each image for verification (without full base64 spam)
-      try {
-        const parsedContent = Array.isArray(result.content) ? result.content : [result.content];
-        parsedContent.forEach((item: any, index: number) => {
-          if (item && typeof item === 'object' && item.image_base64) {
-            const imagePreview = item.image_base64.substring(0, 100);
-            console.log(`Image ${index + 1} base64 preview: ${imagePreview}...`);
-          }
-        });
-      } catch (parseError) {
-        console.warn('Could not parse content for image logging:', parseError);
-      }
-    }
-
     const resultString = JSON.stringify(result.content, null, 2);
-    console.log(`Tool ${toolName} executed successfully with ${hasValidContent ? 'valid' : 'empty'} content`);
+    console.log(
+      `Tool ${toolName} executed successfully with ${
+        hasValidContent ? "valid" : "empty"
+      } content`
+    );
     return resultString;
   } catch (error) {
     console.error(`Error executing tool ${toolName}:`, error);
@@ -284,10 +384,23 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
 
     const model = payload.modelConfig.model as OpenAIModel;
 
-    // Estimate total token usage for the initial request
-    const estimatedTokens = estimateTokenCount(
-      payload.systemPrompt + payload.prompt
-    );
+    // Build initial messages
+    const initialMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] =
+      [
+        { role: "system", content: payload.systemPrompt },
+        { role: "user", content: payload.prompt },
+      ];
+
+    // Calculate accurate token estimates
+    const messagesTokens = countMessagesTokens(initialMessages, model);
+    const toolsTokens = countToolsTokens(payload.availableTools, model);
+    const estimatedTokens = messagesTokens + toolsTokens;
+
+    console.log(`Token estimation for ${model}:`, {
+      messages: messagesTokens,
+      tools: toolsTokens,
+      total: estimatedTokens,
+    });
 
     // Check rate limit
     const rateLimitCheck = checkRateLimit(model, estimatedTokens);
@@ -298,9 +411,16 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
       console.warn(
         `Rate limit would be exceeded. Remaining tokens: ${rateLimitCheck.remaining}`
       );
+
+      // Calculate how many tokens we can use for the prompt
+      const systemTokens = countTokens(payload.systemPrompt, model);
+      const availableForPrompt =
+        rateLimitCheck.remaining - systemTokens - toolsTokens - 1000; // Buffer
+
       const truncateResult = truncatePromptForRateLimit(
         payload.prompt,
-        rateLimitCheck.remaining
+        Math.max(availableForPrompt, 50), // Minimum 50 tokens
+        model
       );
       currentPrompt = truncateResult.prompt;
       isRateLimited = truncateResult.truncated;
@@ -341,8 +461,8 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
     let iteration = 0;
 
     while (iteration < maxIterations) {
-      console.log(`Chat iteration: ${iteration}`);
       iteration++;
+      console.log(`Chat iteration: ${iteration}`);
 
       // Check if this is the final iteration due to rate limits or max iterations
       const isFinalIteration = isRateLimited || iteration >= maxIterations;
@@ -356,6 +476,10 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
         });
       }
 
+      // Log token usage before each request
+      const currentTokenCount = countMessagesTokens(messages, model);
+      console.log(`Iteration ${iteration} token count: ${currentTokenCount}`);
+
       const response = await openai.chat.completions.create({
         ...requestOptions,
         messages,
@@ -364,6 +488,11 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<string> {
       const message = response.choices[0]?.message;
       if (!message) {
         throw new Error("No response from OpenAI API");
+      }
+
+      // Log actual token usage from the response
+      if (response.usage) {
+        console.log(`Actual token usage:`, response.usage);
       }
 
       // Add assistant message to conversation
