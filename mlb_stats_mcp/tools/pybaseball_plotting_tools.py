@@ -215,7 +215,7 @@ async def create_bb_profile_plot(
 
         # Add title and labels if not already set
         if not ax.get_title():
-            ax.set_title(f'Batted Ball Profile: {parameter.replace("_", " ").title()}')
+            ax.set_title(f"Batted Ball Profile: {parameter.replace('_', ' ').title()}")
         if not ax.get_xlabel():
             ax.set_xlabel(parameter.replace("_", " ").title())
         if not ax.get_ylabel():

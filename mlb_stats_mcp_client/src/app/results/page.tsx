@@ -20,9 +20,13 @@ interface MCPTool {
   annotations?: Record<string, unknown>;
 }
 
+interface PlotData {
+  plot_base64: string;
+  plot_title: string;
+}
+
 interface LLMRequestPayload {
   prompt: string;
-  systemPrompt: string;
   availableTools: MCPTool[];
   modelConfig: {
     model: string;
@@ -32,7 +36,7 @@ interface LLMRequestPayload {
 
 export default function ResultsPage() {
   const router = useRouter();
-  const [htmlResult, setHtmlResult] = useState<string>("");
+  const [plotResults, setPlotResults] = useState<PlotData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requestPayload, setRequestPayload] =
@@ -66,29 +70,8 @@ export default function ResultsPage() {
     async (prompt: string, model?: string): Promise<LLMRequestPayload> => {
       const availableTools = tools;
 
-      const systemPrompt = `You are an expert baseball analyst with access to comprehensive MLB data through specialized tools.
-
-Your task is to execute the provided prompt instructions exactly as specified. The prompt contains detailed steps for:
-1. Gathering data using specific MCP tools
-2. Creating visualizations
-3. Generating a complete HTML report
-
-IMPORTANT INSTRUCTIONS:
-- Follow ALL steps in the prompt sequentially
-- Use the available tools to gather real data
-- Generate a complete, self-contained HTML document as the final output
-- Include proper HTML structure with embedded CSS
-- Ensure all visualizations are included as COMPLETE, VALID base64 images
-- Do NOT use placeholder text like {base64_spray_chart} - generate actual base64 data
-- The HTML should be ready to display in a browser
-
-Available MCP tools: ${availableTools.map((t) => t.name).join(", ")}
-
-Execute the prompt instructions and return ONLY the final HTML document.`;
-
       return {
         prompt,
-        systemPrompt,
         availableTools: availableTools,
         modelConfig: {
           model: model || "gpt-4.1-nano",
@@ -129,9 +112,9 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
           );
         }
 
-        // The API returns HTML directly as text/html
-        const htmlResult = await response.text();
-        setHtmlResult(htmlResult);
+        // The API returns JSON with plot data
+        const plotData: PlotData[] = await response.json();
+        setPlotResults(plotData);
       } catch (err) {
         console.error("Error generating report:", err);
         setError(
@@ -210,14 +193,15 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
             </Button>
             <div>
               <h1 className="text-4xl font-bold text-foreground">
-                Custom Report 📊
+                Baseball Analysis 📊
               </h1>
               <p className="text-muted-foreground">
-                AI-generated baseball analysis using MCP tools
+                AI-generated visualizations using MCP Connected to MLB data and
+                advanced analytics
               </p>
             </div>
           </div>
-          {!loading && !error && htmlResult && (
+          {!loading && !error && plotResults.length > 0 && (
             <Button
               variant="outline"
               size="sm"
@@ -266,7 +250,7 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              Report Results
+              Plot Results
               {loading && (
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               )}
@@ -278,11 +262,11 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Preparing Server Request...
+                    Generating Baseball Analysis...
                   </h3>
                   <p className="text-sm text-muted-foreground text-center max-w-md">
-                    Connecting to MCP server and formatting data for OpenAI API
-                    call.
+                    Fetching MLB data and creating visualizations using advanced
+                    analytics.
                   </p>
                 </div>
 
@@ -304,7 +288,7 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
                   <span className="text-destructive text-2xl">⚠️</span>
                 </div>
                 <h3 className="text-lg font-semibold text-destructive mb-2">
-                  Report Generation Failed
+                  Analysis Generation Failed
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
                   {error}
@@ -316,33 +300,40 @@ Execute the prompt instructions and return ONLY the final HTML document.`;
                   <Button onClick={handleRetry}>Try Again</Button>
                 </div>
               </div>
-            ) : htmlResult ? (
-              <div className="space-y-4">
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="bg-muted px-4 py-2 border-b">
-                    <p className="text-sm text-muted-foreground">
-                      Generated HTML Report
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <iframe
-                      srcDoc={htmlResult}
-                      className="w-full h-[800px] border-0"
-                      title="Generated Baseball Report"
-                      sandbox="allow-scripts allow-same-origin"
-                    />
-                  </div>
+            ) : plotResults.length > 0 ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {plotResults.map((plot, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-lg overflow-hidden"
+                    >
+                      <div className="bg-muted px-4 py-2 border-b">
+                        <h3 className="text-sm font-medium text-foreground">
+                          {plot.plot_title}
+                        </h3>
+                      </div>
+                      <div className="p-4">
+                        <img
+                          src={`data:image/png;base64,${plot.plot_base64}`}
+                          alt={plot.plot_title}
+                          className="w-full h-auto rounded"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="flex justify-between items-center pt-4">
                   <p className="text-sm text-muted-foreground">
-                    Report generated using LLM!
+                    {plotResults.length} plots generated using MLB data and
+                    advanced analytics!
                   </p>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={handleBackToHome}>
-                      Create New Report
+                      Create New Analysis
                     </Button>
-                    <Button onClick={handleRetry}>Regenerate Report</Button>
+                    <Button onClick={handleRetry}>Regenerate Plots</Button>
                   </div>
                 </div>
               </div>

@@ -13,12 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp.server.fastmcp import FastMCP
 
-from mlb_stats_mcp.prompts.prompts import (
-    game_recap,
-    player_report,
-    statistical_deep_dive,
-    team_comparison,
-)
+from mlb_stats_mcp.prompts import prompts
 from mlb_stats_mcp.tools import (
     mlb_statsapi_tools,
     pybaseball_plotting_tools,
@@ -37,30 +32,32 @@ logger = setup_logging("mcp_server")
 mcp = FastMCP("baseball", stateless_http=True)
 
 
-@mcp.prompt()
-def analyze_player_performance(player_name: str, season: Optional[int] = None) -> str:
-    """Generate a comprehensive player performance report with statistics and visualizations."""
-    return player_report(player_name, season)
+# Automatically register all prompt functions from prompts.py
+def _register_prompts():
+    """Automatically register all prompt functions from the prompts module."""
+    # Get all prompt functions (those starting with 'cd_' or 'web_ui_')
+    prompt_functions = [
+        name
+        for name in dir(prompts)
+        if callable(getattr(prompts, name))
+        and (name.startswith("cd_") or name.startswith("web_ui_"))
+        and not name.startswith("_")
+    ]
+
+    for name in prompt_functions:
+        func = getattr(prompts, name)
+
+        # Register the prompt directly with MCP
+        mcp.prompt()(func)
+
+        # Add to global namespace so it's accessible
+        globals()[name] = func
+
+        logger.info(f"Registered prompt function: {name}")
 
 
-@mcp.prompt()
-def compare_teams(team1: str, team2: str, focus_area: str = "overall") -> str:
-    """Generate a comprehensive comparison between two MLB teams."""
-    return team_comparison(team1, team2, focus_area)
-
-
-@mcp.prompt()
-def create_game_recap(game_id: int) -> str:
-    """Generate a comprehensive game recap with statistics and key moments."""
-    return game_recap(game_id)
-
-
-@mcp.prompt()
-def statistical_analysis(
-    stat_category: str, season: Optional[int] = None, min_qualifier: Optional[int] = None
-) -> str:
-    """Generate an in-depth statistical analysis for a specific category."""
-    return statistical_deep_dive(stat_category, season, min_qualifier)
+# Register all prompts automatically
+_register_prompts()
 
 
 def mcp_tool_wrapper(func):

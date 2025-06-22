@@ -33,6 +33,16 @@ export default function Home() {
   const [completePromptText, setCompletePromptText] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>("gpt-4.1-nano");
 
+  const filteredPrompts = prompts.filter((prompt: Prompt) =>
+    prompt.name.startsWith("web_ui_")
+  );
+
+  const getDisplayName = (promptName: string) => {
+    return promptName.startsWith("web_ui_")
+      ? promptName.substring(7) // Remove "web_ui_" prefix
+      : promptName;
+  };
+
   const handlePromptChange = (value: string) => {
     setSelectedPrompt(value);
     setArgumentValues({});
@@ -97,7 +107,9 @@ export default function Home() {
   const selectedPromptData =
     selectedPrompt === "custom"
       ? null
-      : prompts.find((p: Prompt) => p.name === selectedPrompt);
+      : filteredPrompts.find(
+          (p: Prompt) => p.name === "web_ui_" + selectedPrompt
+        );
 
   // Check if all required arguments are filled
   const allRequiredArgsFilled = selectedPromptData
@@ -185,7 +197,7 @@ export default function Home() {
                   variant="secondary"
                   className="flex items-center gap-2 text-sm bg-white text-black border"
                 >
-                  ({prompts.length}) prompts available
+                  ({filteredPrompts.length}) prompts available
                 </Badge>
               )}
             </div>
@@ -224,10 +236,15 @@ export default function Home() {
                       <SelectValue placeholder="Choose a prompt..." />
                     </SelectTrigger>
                     <SelectContent className="max-h-80">
-                      {prompts.map((prompt, index) => (
-                        <SelectItem key={index} value={prompt.name}>
+                      {filteredPrompts.map((prompt, index) => (
+                        <SelectItem
+                          key={index}
+                          value={getDisplayName(prompt.name)}
+                        >
                           <div className="flex flex-col items-start justify-center py-2 min-h-12">
-                            <span className="font-medium">{prompt.name}</span>
+                            <span className="font-medium">
+                              {getDisplayName(prompt.name)}
+                            </span>
                             {prompt.description && (
                               <span className="text-xs text-muted-foreground mt-1 max-w-xs truncate">
                                 {prompt.description}
@@ -248,7 +265,7 @@ export default function Home() {
                   </Select>
                 </div>
 
-                {prompts.length === 0 && (
+                {filteredPrompts.length === 0 && (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground">
                       No prompts available from the MCP server.

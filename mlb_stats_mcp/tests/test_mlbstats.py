@@ -53,12 +53,12 @@ async def test_get_schedule_tool():
 
             # Verify all games are between the correct teams
             for game in data:
-                assert (
-                    game["away_id"] == 143 or game["home_id"] == 143
-                ), "Phillies (143) should be in every game"
-                assert (
-                    game["away_id"] == 121 or game["home_id"] == 121
-                ), "Mets (121) should be in every game"
+                assert game["away_id"] == 143 or game["home_id"] == 143, (
+                    "Phillies (143) should be in every game"
+                )
+                assert game["away_id"] == 121 or game["home_id"] == 121, (
+                    "Mets (121) should be in every game"
+                )
 
             # Verify game dates are within the requested range
             game_dates = [game["game_date"] for game in data]
@@ -79,30 +79,30 @@ async def test_get_schedule_tool():
             # Verify specific games from the logs
             game_ids = [game["game_id"] for game in data]
             expected_game_ids = [530769, 529466, 530781, 530796]
-            assert set(game_ids) == set(
-                expected_game_ids
-            ), f"Expected game IDs {expected_game_ids}, got {game_ids}"
+            assert set(game_ids) == set(expected_game_ids), (
+                f"Expected game IDs {expected_game_ids}, got {game_ids}"
+            )
 
             # Verify the doubleheader games
             doubleheader_games = [game for game in data if game["doubleheader"] == "Y"]
             assert len(doubleheader_games) == 2, "Should have 2 doubleheader games"
-            assert all(
-                game["game_date"] == "2018-07-09" for game in doubleheader_games
-            ), "Doubleheader games should be on 2018-07-09"
+            assert all(game["game_date"] == "2018-07-09" for game in doubleheader_games), (
+                "Doubleheader games should be on 2018-07-09"
+            )
 
             # Verify all games have final status
-            assert all(
-                game["status"] == "Final" for game in data
-            ), "All games should have 'Final' status"
+            assert all(game["status"] == "Final" for game in data), (
+                "All games should have 'Final' status"
+            )
 
             # Test with invalid date
             result = await session.call_tool("get_schedule", {"date": "invalid_date"})
             assert result.isError, "Expected error response for invalid date"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_schedule" in error_text
-            ), "Error message should mention get_schedule"
+            assert "Error in get_schedule" in error_text, (
+                "Error message should mention get_schedule"
+            )
 
 
 @pytest.mark.asyncio
@@ -133,9 +133,9 @@ async def test_lookup_player_tool():
             assert result.isError, "Expected error response for invalid player name"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in lookup_player" in error_text
-            ), "Error message should mention lookup_player"
+            assert "Error in lookup_player" in error_text, (
+                "Error message should mention lookup_player"
+            )
 
 
 @pytest.mark.asyncio
@@ -160,9 +160,9 @@ async def test_get_standings_tool():
 
             # Verify response structure
             data = json.loads(result.content[0].text)
-            assert (
-                "200" in data and "div_name" in data["200"]
-            ), "Missing expected division structure"
+            assert "200" in data and "div_name" in data["200"], (
+                "Missing expected division structure"
+            )
 
             # Test with invalid standings type
             result = await session.call_tool(
@@ -173,9 +173,9 @@ async def test_get_standings_tool():
             assert result.isError, "Expected error response for invalid standings type"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_standings" in error_text
-            ), "Error message should mention get_standings"
+            assert "Error in get_standings" in error_text, (
+                "Error message should mention get_standings"
+            )
 
 
 @pytest.mark.asyncio
@@ -212,9 +212,9 @@ async def test_get_team_leaders_tool():
 
             # Verify response structure
             data = json.loads(result.content[0].text)
-            assert (
-                "teamLeaders" in data or "results" in data
-            ), "Missing team leader data in response"
+            assert "teamLeaders" in data or "results" in data, (
+                "Missing team leader data in response"
+            )
 
             # Test with invalid team ID
             result = await session.call_tool(
@@ -227,9 +227,9 @@ async def test_get_team_leaders_tool():
             assert result.isError, "Expected error response for invalid team ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_team_leaders" in error_text
-            ), "Error message should mention get_team_leaders"
+            assert "Error in get_team_leaders" in error_text, (
+                "Error message should mention get_team_leaders"
+            )
 
 
 @pytest.mark.asyncio
@@ -308,9 +308,9 @@ async def test_get_player_stats_tool():
             assert result.isError, "Expected error response for invalid player ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_player_stats" in error_text
-            ), "Error message should mention get_player_stats"
+            assert "Error in get_player_stats" in error_text, (
+                "Error message should mention get_player_stats"
+            )
 
 
 @pytest.mark.asyncio
@@ -333,18 +333,18 @@ async def test_get_boxscore_tool():
             # Verify response structure
             data = json.loads(result.content[0].text)
             common_keys = ["game_id", "boxscore", "success"]
-            assert any(
-                key in data for key in common_keys
-            ), f"Response missing expected boxscore structure, expected one of: {common_keys}"
+            assert any(key in data for key in common_keys), (
+                f"Response missing expected boxscore structure, expected one of: {common_keys}"
+            )
 
             # Test with invalid game ID
             result = await session.call_tool("get_boxscore", {"game_id": 999999})
             assert result.isError, "Expected error response for invalid game ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_boxscore" in error_text
-            ), "Error message should mention get_boxscore"
+            assert "Error in get_boxscore" in error_text, (
+                "Error message should mention get_boxscore"
+            )
 
 
 @pytest.mark.asyncio
@@ -367,18 +367,18 @@ async def test_get_game_pace_tool():
             # Verify response structure
             data = json.loads(result.content[0].text)
             expected_keys = ["copyright", "sports", "teams", "leagues"]
-            assert any(
-                key in data for key in expected_keys
-            ), f"Response missing expected data structure, expected one of: {expected_keys}"
+            assert any(key in data for key in expected_keys), (
+                f"Response missing expected data structure, expected one of: {expected_keys}"
+            )
 
             # Test with invalid season
             result = await session.call_tool("get_game_pace", {"season": 9999})
             assert result.isError, "Expected error response for invalid season"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_game_pace" in error_text
-            ), "Error message should mention get_game_pace"
+            assert "Error in get_game_pace" in error_text, (
+                "Error message should mention get_game_pace"
+            )
 
 
 @pytest.mark.asyncio
@@ -528,9 +528,9 @@ async def test_get_game_scoring_play_data_tool():
             assert result.isError, "Expected error response for invalid game ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_game_scoring_play_data" in error_text
-            ), "Error message should mention get_game_scoring_play_data"
+            assert "Error in get_game_scoring_play_data" in error_text, (
+                "Error message should mention get_game_scoring_play_data"
+            )
 
 
 @pytest.mark.asyncio
@@ -568,9 +568,9 @@ async def test_get_last_game_tool():
             assert result.isError, "Expected error response for invalid team ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_last_game" in error_text
-            ), "Error message should mention get_last_game"
+            assert "Error in get_last_game" in error_text, (
+                "Error message should mention get_last_game"
+            )
 
 
 @pytest.mark.asyncio
@@ -621,9 +621,9 @@ async def test_get_league_leader_data_tool():
             assert result.isError, "Expected error response for invalid parameters"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_league_leader_data" in error_text
-            ), "Error message should mention get_league_leader_data"
+            assert "Error in get_league_leader_data" in error_text, (
+                "Error message should mention get_league_leader_data"
+            )
 
 
 @pytest.mark.asyncio
@@ -661,9 +661,9 @@ async def test_get_linescore_tool():
             assert result.isError, "Expected error response for invalid game ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_linescore" in error_text
-            ), "Error message should mention get_linescore"
+            assert "Error in get_linescore" in error_text, (
+                "Error message should mention get_linescore"
+            )
 
 
 @pytest.mark.asyncio
@@ -708,9 +708,9 @@ async def test_get_next_game_tool():
             assert result.isError, "Expected error response for invalid team ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_next_game" in error_text
-            ), "Error message should mention get_next_game"
+            assert "Error in get_next_game" in error_text, (
+                "Error message should mention get_next_game"
+            )
 
 
 @pytest.mark.asyncio
@@ -759,9 +759,9 @@ async def test_get_team_roster_tool():
             assert result.isError, "Expected error response for invalid team ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_team_roster" in error_text
-            ), "Error message should mention get_team_roster"
+            assert "Error in get_team_roster" in error_text, (
+                "Error message should mention get_team_roster"
+            )
 
 
 @pytest.mark.asyncio
@@ -814,6 +814,6 @@ async def test_get_game_highlight_data_tool():
             assert result.isError, "Expected error response for invalid game ID"
             assert result.content, "No error content returned"
             error_text = result.content[0].text
-            assert (
-                "Error in get_game_highlight_data" in error_text
-            ), "Error message should mention get_game_highlight_data"
+            assert "Error in get_game_highlight_data" in error_text, (
+                "Error message should mention get_game_highlight_data"
+            )
