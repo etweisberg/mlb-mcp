@@ -42,16 +42,24 @@ async def test_get_statcast_batter_exitvelo_barrels():
                 "get_statcast_batter_exitvelo_barrels", {"year": 2023, "minBBE": 50}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -68,16 +76,24 @@ async def test_get_statcast_pitcher_exitvelo_barrels():
                 "get_statcast_pitcher_exitvelo_barrels", {"year": 2023, "minBBE": 50}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -94,16 +110,24 @@ async def test_get_statcast_batter_expected_stats():
                 "get_statcast_batter_expected_stats", {"year": 2023, "minPA": 50}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -120,16 +144,24 @@ async def test_get_statcast_pitcher_expected_stats():
                 "get_statcast_pitcher_expected_stats", {"year": 2023, "minPA": 50}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -144,16 +176,24 @@ async def test_get_statcast_batter_percentile_ranks():
             # Test with valid parameters
             result = await session.call_tool("get_statcast_batter_percentile_ranks", {"year": 2023})
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -170,16 +210,24 @@ async def test_get_statcast_pitcher_percentile_ranks():
                 "get_statcast_pitcher_percentile_ranks", {"year": 2023}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -196,16 +244,24 @@ async def test_get_statcast_batter_pitch_arsenal():
                 "get_statcast_batter_pitch_arsenal", {"year": 2023, "minPA": 50}
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -223,23 +279,32 @@ async def test_get_statcast_pitcher_pitch_arsenal():
                 {"year": 2023, "minP": 50, "arsenal_type": "avg_speed"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
             # Test with different arsenal type
             result = await session.call_tool(
                 "get_statcast_pitcher_pitch_arsenal",
                 {"year": 2023, "minP": 50, "arsenal_type": "avg_spin"},
             )
-            assert not result.isError, "Expected successful response"
+            # This should succeed or hit length limit, but not a tool error
+            assert not result.isError, "Expected successful response or length limit handling"
 
             # Test with invalid arsenal type
             result = await session.call_tool(
@@ -264,16 +329,24 @@ async def test_get_statcast_single_game():
                 {"game_pk": 717953},  # Example game from 2023
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
             # Test with invalid game ID
             result = await session.call_tool("get_statcast_single_game", {"game_pk": 999999999})
@@ -499,16 +572,24 @@ async def test_image_plot_teams():
                 {"start_season": 2023, "league": "all"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
             # Create plot_teams visualization
             plot_result = await session.call_tool(
@@ -556,16 +637,24 @@ async def test_get_pitching_stats_bref():
             # Test with valid parameters
             result = await session.call_tool("get_pitching_stats_bref", {"season": 2023})
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
             assert data["count"] > 0, "Should have pitching data"
 
 
@@ -584,16 +673,24 @@ async def test_get_pitching_stats_range():
                 {"start_dt": "2023-04-01", "end_dt": "2023-04-07"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -611,16 +708,24 @@ async def test_get_pitching_stats():
                 {"start_season": 2023, "qual": 50},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -638,16 +743,24 @@ async def test_get_schedule_and_record():
                 {"season": 2023, "team": "LAD"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -665,16 +778,24 @@ async def test_get_player_splits():
                 {"playerid": "troutmi01", "year": 2023},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -717,16 +838,24 @@ async def test_get_team_batting():
                 {"start_season": 2023, "league": "all"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -744,16 +873,24 @@ async def test_get_team_fielding():
                 {"start_season": 2023, "league": "all"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -771,16 +908,24 @@ async def test_get_team_pitching():
                 {"start_season": 2023, "league": "all"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
@@ -798,16 +943,24 @@ async def test_get_top_prospects():
                 {"team": "angels", "player_type": "batters"},
             )
 
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
+            # Verify successful response or proper length limit handling
+            assert not result.isError, "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
-            # Verify response structure
             data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation structure
+                assert "length" in data, "Length limit response should contain 'length' key"
+                assert "limit" in data, "Length limit response should contain 'limit' key"
+                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+            else:
+                # Verify successful response structure
+                assert "data" in data, "Response should contain 'data' key"
+                assert "count" in data, "Response should contain 'count' key"
+                assert "columns" in data, "Response should contain 'columns' key"
 
 
 @pytest.mark.asyncio
