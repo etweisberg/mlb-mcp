@@ -53,7 +53,7 @@ def _register_prompts():
         # Add to global namespace so it's accessible
         globals()[name] = func
 
-        logger.info(f"Registered prompt function: {name}")
+        logger.debug(f"Registered prompt function: {name}")
 
 
 # Register all prompts automatically
@@ -268,6 +268,8 @@ async def get_statcast_data(
     team: Optional[str] = None,
     verbose: bool = True,
     parallel: bool = True,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Pulls statcast play-level data from Baseball Savant for a given date range.
 
@@ -280,10 +282,17 @@ async def get_statcast_data(
         whether to print updates on query progress
     parallel: bool (defaults to True) :
         whether to parallelize HTTP requests in large queries
+    start_row: optional (defaults to None) :
+        starting row index for truncating large results (0-based, inclusive)
+    end_row: optional (defaults to None) :
+        ending row index for truncating large results (0-based, exclusive)
 
+    Use start_row and end_row to limit response size when dealing with large datasets.
     If no arguments are provided, this will return yesterday's statcast data.
     If one date is provided, it will return that date's statcast data."""
-    return await statcast_tools.get_statcast_data(start_dt, end_dt, team, verbose, parallel)
+    return await statcast_tools.get_statcast_data(
+        start_dt, end_dt, team, verbose, parallel, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -291,6 +300,8 @@ async def get_statcast_batter_data(
     player_id: int,
     start_dt: Optional[str] = None,
     end_dt: Optional[str] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Pulls statcast pitch-level data from Baseball Savant for a given batter.
@@ -303,8 +314,16 @@ async def get_statcast_batter_data(
             the player's MLBAM ID.
             Find this by via the get_playerid_lookup tool,
             finding the correct player, and selecting their key_mlbam.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_data(player_id, start_dt, end_dt)
+    return await statcast_tools.get_statcast_batter_data(
+        player_id, start_dt, end_dt, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -312,6 +331,8 @@ async def get_statcast_pitcher_data(
     player_id: int,
     start_dt: Optional[str] = None,
     end_dt: Optional[str] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Pulls statcast pitch-level data from Baseball Savant for a given pitcher.
@@ -324,14 +345,24 @@ async def get_statcast_pitcher_data(
             the player's MLBAM ID.
             Find this by calling pthe get_playerid_lookup tool,
             finding the correct player, and selecting their key_mlbam.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_data(player_id, start_dt, end_dt)
+    return await statcast_tools.get_statcast_pitcher_data(
+        player_id, start_dt, end_dt, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
 async def get_statcast_batter_exitvelo_barrels(
     year: int,
     minBBE: Optional[int] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Retrieves batted ball data for all batters in a given year.
@@ -342,14 +373,24 @@ async def get_statcast_batter_exitvelo_barrels(
             The minimum number of batted ball events for each player.
             If a player falls below this threshold, they will be excluded from the results.
             If no value is specified, only qualified batters will be returned.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_exitvelo_barrels(year, minBBE)
+    return await statcast_tools.get_statcast_batter_exitvelo_barrels(
+        year, minBBE, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
 async def get_statcast_pitcher_exitvelo_barrels(
     year: int,
     minBBE: Optional[int] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Retrieves batted ball against data for all qualified pitchers in a given year.
@@ -360,14 +401,24 @@ async def get_statcast_pitcher_exitvelo_barrels(
             The minimum number of batted ball against events for each pitcher.
             If a player falls below this threshold, they will be excluded from the results.
             If no value is specified, only qualified pitchers will be returned.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_exitvelo_barrels(year, minBBE)
+    return await statcast_tools.get_statcast_pitcher_exitvelo_barrels(
+        year, minBBE, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
 async def get_statcast_batter_expected_stats(
     year: int,
     minPA: Optional[int] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Retrieves expected stats based on quality of batted ball contact in a given year.
@@ -377,46 +428,66 @@ async def get_statcast_batter_expected_stats(
         minPA: The minimum number of plate appearances for each player.
             If a player falls below this threshold, they will be excluded from the results.
             If no value is specified, only qualified batters will be returned.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_expected_stats(year, minPA)
+    return await statcast_tools.get_statcast_batter_expected_stats(year, minPA, start_row, end_row)
 
 
 @mcp_tool_wrapper
 async def get_statcast_pitcher_expected_stats(
     year: int,
     minPA: Optional[int] = None,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Retrieves batted ball against data for all qualified pitchers in a given year.
+    Retrieves expected stats based on quality of batted ball contact against in a given year.
 
     ARGUMENTS
-        year: The year for which you wish to retrieve batted ball against data. Format: YYYY.
-        minBBE: The minimum number of batted ball against events for each pitcher.
+        year: The year for which you wish to retrieve expected stats data. Format: YYYY.
+        minPA: The minimum number of plate appearances against for each pitcher.
             If a player falls below this
             threshold, they will be excluded from the results.
             If no value is specified, only qualified pitchers
             will be returned.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_expected_stats(year, minPA)
+    return await statcast_tools.get_statcast_pitcher_expected_stats(year, minPA, start_row, end_row)
 
 
 @mcp_tool_wrapper
-async def get_statcast_batter_percentile_ranks(year: int) -> Dict[str, Any]:
+async def get_statcast_batter_percentile_ranks(
+    year: int, start_row: Optional[int] = None, end_row: Optional[int] = None
+) -> Dict[str, Any]:
     """
-    Retrieves expected stats based on quality of batted ball contact in a given year.
+    Retrieves percentile ranks for batters in a given year.
 
     ARGUMENTS
-        year: The year for which you wish to retrieve expected stats data. Format: YYYY.
-        minPA: The minimum number of plate appearances for each player.
-            If a player falls below this threshold,
-            they will be excluded from the results.
-            If no value is specified, only qualified batters will be returned.
+        year: The year for which you wish to retrieve percentile data. Format: YYYY.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_percentile_ranks(year)
+    return await statcast_tools.get_statcast_batter_percentile_ranks(year, start_row, end_row)
 
 
 @mcp_tool_wrapper
-async def get_statcast_pitcher_percentile_ranks(year: int) -> Dict[str, Any]:
+async def get_statcast_pitcher_percentile_ranks(
+    year: int, start_row: Optional[int] = None, end_row: Optional[int] = None
+) -> Dict[str, Any]:
     """
     Retrieves percentile ranks for each player in a given year,
     including batters with 2.1 PA per team game and 1.25
@@ -425,14 +496,22 @@ async def get_statcast_pitcher_percentile_ranks(year: int) -> Dict[str, Any]:
 
     ARGUMENTS
         year: The year for which you wish to retrieve percentile data. Format: YYYY.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_percentile_ranks(year)
+    return await statcast_tools.get_statcast_pitcher_percentile_ranks(year, start_row, end_row)
 
 
 @mcp_tool_wrapper
 async def get_statcast_batter_pitch_arsenal(
     year: int,
     minPA: int = 25,
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Retrieves outcome data for batters split by the pitch type in a given year.
@@ -443,8 +522,14 @@ async def get_statcast_batter_pitch_arsenal(
             If a player falls below this threshold,
                 they will be excluded from the results.
             If no value is specified, the default number of plate appearances is 25.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_pitch_arsenal(year, minPA)
+    return await statcast_tools.get_statcast_batter_pitch_arsenal(year, minPA, start_row, end_row)
 
 
 @mcp_tool_wrapper
@@ -452,6 +537,8 @@ async def get_statcast_pitcher_pitch_arsenal(
     year: int,
     minP: Optional[int] = None,
     arsenal_type: str = "average_speed",
+    start_row: Optional[int] = None,
+    end_row: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Retrieves high level stats on each pitcher's arsenal in a given year.
@@ -466,20 +553,36 @@ async def get_statcast_pitcher_pitch_arsenal(
             Options include ["average_speed", "n_", "average_spin"],
                 where "n_" corresponds to the percentage share for each pitch.
             If no value is specified, it will default to average speed.
+        start_row: optional (defaults to None) :
+            starting row index for truncating large results (0-based, inclusive)
+        end_row: optional (defaults to None) :
+            ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_pitch_arsenal(year, minP, arsenal_type)
+    return await statcast_tools.get_statcast_pitcher_pitch_arsenal(
+        year, minP, arsenal_type, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
-async def get_statcast_single_game(game_pk: int) -> Dict[str, Any]:
+async def get_statcast_single_game(
+    game_pk: int, start_row: Optional[int] = None, end_row: Optional[int] = None
+) -> Dict[str, Any]:
     """
     Pulls statcast play-level data from Baseball Savant for a single game,
     identified by its MLB game ID (game_pk in statcast data)
 
     INPUTS:
     game_pk : 6-digit integer MLB game ID to retrieve
+    start_row: optional (defaults to None) :
+        starting row index for truncating large results (0-based, inclusive)
+    end_row: optional (defaults to None) :
+        ending row index for truncating large results (0-based, exclusive)
+
+    Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_single_game(game_pk)
+    return await statcast_tools.get_statcast_single_game(game_pk, start_row, end_row)
 
 
 @mcp_tool_wrapper

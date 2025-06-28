@@ -31,7 +31,7 @@ export default function Home() {
     {}
   );
   const [completePromptText, setCompletePromptText] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>("gpt-4.1-nano");
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4o-mini");
 
   const filteredPrompts = prompts.filter((prompt: Prompt) =>
     prompt.name.startsWith("web_ui_")

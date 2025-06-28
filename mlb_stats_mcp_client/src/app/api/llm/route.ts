@@ -42,7 +42,7 @@ async function sleep(ms: number): Promise<void> {
 // Add this retry function with exponential backoff
 async function callOpenAIWithRetry(
   requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParams,
-  maxRetries: number = 9,
+  maxRetries: number = 2,
   baseDelay: number = 1000
 ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
   let lastError: Error;
@@ -314,19 +314,23 @@ async function callOpenAI(payload: LLMRequestPayload): Promise<PlotData[]> {
       ) {
         for (const toolCall of message.tool_calls) {
           try {
+            console.log(
+              `Calling tool: ${toolCall.function.name} with arguments: ${toolCall.function.arguments}`
+            );
             const result = await executeToolCall(
               toolCall.function.name,
               JSON.parse(toolCall.function.arguments),
               mcpClient
             );
-
             const toolMsg: OpenAI.Chat.Completions.ChatCompletionMessageParam =
               {
                 role: "function",
                 name: toolCall.function.name,
                 content: result,
               };
-
+            console.log(
+              `Tool result length: ${JSON.stringify(toolMsg).length}`
+            );
             pushMessage(messages, toolMsg);
           } catch (toolError) {
             // Add error result to conversation so the LLM can handle it
@@ -391,6 +395,7 @@ export async function POST(request: NextRequest) {
     }
 
     const plotData = await callOpenAI(payload);
+    console.log(`Plot data: ${plotData}`);
 
     if (plotData.length === 0) {
       return NextResponse.json(
@@ -405,6 +410,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(plotData);
   } catch (error) {
     // Handle rate limit errors and other API-specific errors
+    console.error(error);
     if (error instanceof Error) {
       if (error.message.includes("429")) {
         return NextResponse.json(
@@ -419,7 +425,6 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-
     return NextResponse.json(
       {
         error: "Internal server error",

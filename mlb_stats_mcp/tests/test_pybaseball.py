@@ -29,115 +29,6 @@ def simplify_session_setup():
 
 
 @pytest.mark.asyncio
-async def test_get_statcast_data():
-    """Test the get_statcast_data tool."""
-    params = simplify_session_setup()
-
-    async with stdio_client(params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-
-            # Test with valid parameters - using a small date range to minimize test time
-            result = await session.call_tool(
-                "get_statcast_data", {"start_dt": "2023-04-01", "end_dt": "2023-04-01"}
-            )
-
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
-            assert result.content, "No content returned from tool"
-            assert result.content[0].type == "text", "Expected text response"
-
-            # Verify response structure
-            data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
-
-            # Test with team parameter
-            result = await session.call_tool(
-                "get_statcast_data",
-                {"start_dt": "2023-04-01", "end_dt": "2023-04-01", "team": "NYY"},
-            )
-            assert not result.isError, "Expected successful response"
-
-
-@pytest.mark.asyncio
-async def test_get_statcast_batter_data():
-    """Test the get_statcast_batter_data tool."""
-    params = simplify_session_setup()
-
-    async with stdio_client(params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-
-            # Test with valid parameters - using Aaron Judge's ID
-            result = await session.call_tool(
-                "get_statcast_batter_data",
-                {"player_id": 592450, "start_dt": "2023-04-01", "end_dt": "2023-04-01"},
-            )
-
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
-            assert result.content, "No content returned from tool"
-            assert result.content[0].type == "text", "Expected text response"
-
-            # Verify response structure
-            data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
-
-            # Test with invalid player ID
-            result = await session.call_tool(
-                "get_statcast_batter_data",
-                {
-                    "player_id": 99999999,
-                    "start_dt": "2023-04-01",
-                    "end_dt": "2023-04-01",
-                },
-            )
-            assert result.isError, "Expected error response for invalid player ID"
-
-
-@pytest.mark.asyncio
-async def test_get_statcast_pitcher_data():
-    """Test the get_statcast_pitcher_data tool."""
-    params = simplify_session_setup()
-
-    async with stdio_client(params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
-
-            # Test with valid parameters - using Gerrit Cole's ID
-            result = await session.call_tool(
-                "get_statcast_pitcher_data",
-                {"player_id": 543037, "start_dt": "2023-04-01", "end_dt": "2024-04-01"},
-            )
-
-            # Verify successful response
-            assert not result.isError, "Expected successful response"
-            assert result.content, "No content returned from tool"
-            assert result.content[0].type == "text", "Expected text response"
-
-            # Verify response structure
-            data = json.loads(result.content[0].text)
-            assert "data" in data, "Response should contain 'data' key"
-            assert "count" in data, "Response should contain 'count' key"
-            assert "columns" in data, "Response should contain 'columns' key"
-
-            # Test with invalid player ID
-            result = await session.call_tool(
-                "get_statcast_pitcher_data",
-                {
-                    "player_id": 99999999,
-                    "start_dt": "2023-04-01",
-                    "end_dt": "2024-04-01",
-                },
-            )
-            assert result.isError, "Expected error response for invalid player ID"
-
-
-@pytest.mark.asyncio
 async def test_get_statcast_batter_exitvelo_barrels():
     """Test the get_statcast_batter_exitvelo_barrels tool."""
     params = simplify_session_setup()
@@ -470,6 +361,7 @@ async def test_image_create_spraychart_plot_votto_aquino():
                         "player_id": 458015,
                         "start_dt": "2019-08-01",
                         "end_dt": "2019-10-01",
+                        "end_row": 200,
                     },
                 )
 
@@ -483,6 +375,7 @@ async def test_image_create_spraychart_plot_votto_aquino():
                         "player_id": 606157,
                         "start_dt": "2019-08-01",
                         "end_dt": "2019-10-01",
+                        "end_row": 200,
                     },
                 )
 
@@ -550,6 +443,7 @@ async def test_image_create_bb_profile_plot():
                         "end_dt": "2018-05-04",
                         "verbose": True,
                         "parallel": True,
+                        "end_row": 200,
                     },
                 )
 
@@ -914,3 +808,640 @@ async def test_get_top_prospects():
             assert "data" in data, "Response should contain 'data' key"
             assert "count" in data, "Response should contain 'count' key"
             assert "columns" in data, "Response should contain 'columns' key"
+
+
+@pytest.mark.asyncio
+async def test_statcast_length_limit_exceeded():
+    """Test that statcast tools handle length limit properly when response is too large."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test get_statcast_data with a large date range that should exceed limit
+            result = await session.call_tool(
+                "get_statcast_data",
+                {"start_dt": "2023-04-01", "end_dt": "2023-04-30"},  # Full month
+            )
+
+            # Verify response structure - could be success or length limit error
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Verify correct length limitation
+            assert "error" in data
+            assert "length" in data
+            assert "limit" in data
+            assert "total_rows" in data
+
+            # Try new call with end_row (use conservative calculation)
+            bytes_per_row = data["length"] // data["total_rows"]
+            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            new_row_estimate = max(1, int(max_safe_rows))
+            result = await session.call_tool(
+                "get_statcast_data",
+                {
+                    "start_dt": "2023-04-01",
+                    "end_dt": "2023-04-30",
+                    "end_row": new_row_estimate,
+                },  # row limitation
+            )
+            data = json.loads(result.content[0].text)
+            assert "data" in data
+            assert "count" in data
+            assert "total_rows" in data
+            assert "columns" in data
+            assert data["count"] == new_row_estimate
+
+
+@pytest.mark.asyncio
+async def test_statcast_batter_length_limit_handling():
+    """Test that get_statcast_batter_data handles length limit with large date range."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with Aaron Judge and a large date range
+            result = await session.call_tool(
+                "get_statcast_batter_data",
+                {
+                    "player_id": 592450,  # Aaron Judge
+                    "start_dt": "2022-04-01",
+                    "end_dt": "2022-10-31",  # Full 2022 season
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Verify correct length limitation
+            assert "error" in data
+            assert "length" in data
+            assert "limit" in data
+            assert "total_rows" in data
+
+            # Try new call with end_row (use conservative calculation)
+            bytes_per_row = data["length"] // data["total_rows"]
+            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            new_row_estimate = max(1, int(max_safe_rows))
+            result = await session.call_tool(
+                "get_statcast_batter_data",
+                {
+                    "player_id": 592450,
+                    "start_dt": "2022-04-01",
+                    "end_dt": "2022-10-31",
+                    "end_row": new_row_estimate,
+                },
+            )
+            data = json.loads(result.content[0].text)
+            assert "data" in data
+            assert "count" in data
+            assert "total_rows" in data
+            assert "columns" in data
+            assert data["count"] == new_row_estimate
+
+
+@pytest.mark.asyncio
+async def test_statcast_pitcher_length_limit_handling():
+    """Test that get_statcast_pitcher_data handles length limit with large date range."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with Gerrit Cole and a large date range
+            result = await session.call_tool(
+                "get_statcast_pitcher_data",
+                {
+                    "player_id": 543037,  # Gerrit Cole
+                    "start_dt": "2022-04-01",
+                    "end_dt": "2022-10-31",  # Full 2022 season
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Verify correct length limitation
+            assert "error" in data
+            assert "length" in data
+            assert "limit" in data
+            assert "total_rows" in data
+
+            # Try new call with end_row (use conservative calculation)
+            bytes_per_row = data["length"] // data["total_rows"]
+            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            new_row_estimate = max(1, int(max_safe_rows))
+            result = await session.call_tool(
+                "get_statcast_pitcher_data",
+                {
+                    "player_id": 543037,
+                    "start_dt": "2022-04-01",
+                    "end_dt": "2022-10-31",
+                    "end_row": new_row_estimate,
+                },
+            )
+            data = json.loads(result.content[0].text)
+            assert "data" in data
+            assert "count" in data
+            assert "total_rows" in data
+            assert "columns" in data
+            assert data["count"] == new_row_estimate
+
+
+@pytest.mark.asyncio
+async def test_statcast_batter_exitvelo_barrels_length_limit_handling():
+    """Test that get_statcast_batter_exitvelo_barrels handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that should trigger length limit (very low minBBE)
+            result = await session.call_tool(
+                "get_statcast_batter_exitvelo_barrels",
+                {
+                    "year": 2023,
+                    "minBBE": 1,  # Very low threshold to get many batters
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_batter_exitvelo_barrels",
+                    {
+                        "year": 2023,
+                        "minBBE": 1,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_pitcher_exitvelo_barrels_length_limit_handling():
+    """Test that get_statcast_pitcher_exitvelo_barrels handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that should trigger length limit (very low minBBE)
+            result = await session.call_tool(
+                "get_statcast_pitcher_exitvelo_barrels",
+                {
+                    "year": 2023,
+                    "minBBE": 1,  # Very low threshold to get many pitchers
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_pitcher_exitvelo_barrels",
+                    {
+                        "year": 2023,
+                        "minBBE": 1,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_batter_expected_stats_length_limit_handling():
+    """Test that get_statcast_batter_expected_stats handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that should trigger length limit (very low minPA)
+            result = await session.call_tool(
+                "get_statcast_batter_expected_stats",
+                {
+                    "year": 2023,
+                    "minPA": 1,  # Very low threshold to get many batters
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_batter_expected_stats",
+                    {
+                        "year": 2023,
+                        "minPA": 1,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_pitcher_expected_stats_length_limit_handling():
+    """Test that get_statcast_pitcher_expected_stats handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that should trigger length limit (very low minPA)
+            result = await session.call_tool(
+                "get_statcast_pitcher_expected_stats",
+                {
+                    "year": 2023,
+                    "minPA": 1,  # Very low threshold to get many pitchers
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_pitcher_expected_stats",
+                    {
+                        "year": 2023,
+                        "minPA": 1,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_batter_percentile_ranks_length_limit_handling():
+    """Test that get_statcast_batter_percentile_ranks handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with year that should trigger length limit
+            result = await session.call_tool(
+                "get_statcast_batter_percentile_ranks",
+                {
+                    "year": 2023,
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_batter_percentile_ranks",
+                    {
+                        "year": 2023,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_pitcher_percentile_ranks_length_limit_handling():
+    """Test that get_statcast_pitcher_percentile_ranks handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with year that should trigger length limit
+            result = await session.call_tool(
+                "get_statcast_pitcher_percentile_ranks",
+                {
+                    "year": 2023,
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_pitcher_percentile_ranks",
+                    {
+                        "year": 2023,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_batter_pitch_arsenal_length_limit_handling():
+    """Test that get_statcast_batter_pitch_arsenal handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that might exceed limit (low minPA)
+            result = await session.call_tool(
+                "get_statcast_batter_pitch_arsenal",
+                {
+                    "year": 2023,
+                    "minPA": 1,  # Very low threshold to get many batters
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_batter_pitch_arsenal",
+                    {
+                        "year": 2023,
+                        "minPA": 1,
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_pitcher_pitch_arsenal_length_limit_handling():
+    """Test that get_statcast_pitcher_pitch_arsenal handles length limit properly."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Test with parameters that should trigger length limit (very low minP)
+            result = await session.call_tool(
+                "get_statcast_pitcher_pitch_arsenal",
+                {
+                    "year": 2023,
+                    "minP": 1,  # Very low threshold to get many pitchers
+                    "arsenal_type": "avg_speed",
+                },
+            )
+
+            # Verify response structure
+            assert not result.isError, "Expected successful response or length limit handling"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            data = json.loads(result.content[0].text)
+
+            # Check if we got successful data or length limit error
+            if "error" in data:
+                # Verify correct length limitation
+                assert "length" in data
+                assert "limit" in data
+                assert "total_rows" in data
+
+                # Try new call with end_row (use conservative calculation)
+                bytes_per_row = data["length"] // data["total_rows"]
+                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                new_row_estimate = max(1, int(max_safe_rows))
+                result = await session.call_tool(
+                    "get_statcast_pitcher_pitch_arsenal",
+                    {
+                        "year": 2023,
+                        "minP": 1,
+                        "arsenal_type": "avg_speed",
+                        "end_row": new_row_estimate,
+                    },
+                )
+                data = json.loads(result.content[0].text)
+                assert "data" in data
+                assert "count" in data
+                assert "total_rows" in data
+                assert "columns" in data
+                assert data["count"] == new_row_estimate
+            else:
+                # If no length limit hit, just verify we got valid data
+                assert "data" in data
+                assert "count" in data
+                assert "columns" in data
+
+
+@pytest.mark.asyncio
+async def test_statcast_single_game_with_truncation():
+    """Test that get_statcast_single_game works with start_row and end_row parameters."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # First, get a game that might have a lot of data
+            result = await session.call_tool(
+                "get_statcast_single_game",
+                {"game_pk": 717953, "start_row": 0, "end_row": 10},  # Just first 10 rows
+            )
+
+            # Verify successful response
+            assert not result.isError, "Expected successful response"
+            assert result.content, "No content returned from tool"
+            assert result.content[0].type == "text", "Expected text response"
+
+            # Verify successful response with truncation
+            data = json.loads(result.content[0].text)
+            assert "data" in data
+            assert "count" in data
+            assert "total_rows" in data
+            assert "columns" in data
+            assert data["count"] == 10
