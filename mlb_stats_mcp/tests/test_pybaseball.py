@@ -363,18 +363,33 @@ async def test_image_create_spraychart_altuve():
             await session.initialize()
 
             try:
-                # Get statcast batter data for Jose Altuve
+                # Get statcast batter data for Jose Altuve - using end_row to limit response size
                 batter_result = await session.call_tool(
                     "get_statcast_batter_data",
                     {
                         "player_id": 514888,
                         "start_dt": "2019-05-01",
                         "end_dt": "2019-07-01",
+                        "end_row": 100,  # Limit to first 100 rows
                     },
                 )
 
                 assert not batter_result.isError
                 batter_data = json.loads(batter_result.content[0].text)
+
+                # Check if we got successful data or length limit error
+                if "error" in batter_data:
+                    # If still too long even with end_row, use smaller limit
+                    batter_result = await session.call_tool(
+                        "get_statcast_batter_data",
+                        {
+                            "player_id": 514888,
+                            "start_dt": "2019-05-01",
+                            "end_dt": "2019-07-01",
+                            "end_row": 50,  # Even smaller limit
+                        },
+                    )
+                    batter_data = json.loads(batter_result.content[0].text)
 
                 assert "data" in batter_data
                 assert len(batter_data["data"]) > 0
@@ -434,7 +449,7 @@ async def test_image_create_spraychart_plot_votto_aquino():
                         "player_id": 458015,
                         "start_dt": "2019-08-01",
                         "end_dt": "2019-10-01",
-                        "end_row": 200,
+                        "end_row": 50,
                     },
                 )
 
@@ -448,7 +463,7 @@ async def test_image_create_spraychart_plot_votto_aquino():
                         "player_id": 606157,
                         "start_dt": "2019-08-01",
                         "end_dt": "2019-10-01",
-                        "end_row": 200,
+                        "end_row": 50,
                     },
                 )
 
@@ -508,7 +523,7 @@ async def test_image_create_bb_profile_plot():
             await session.initialize()
 
             try:
-                # Get statcast data for specific date range
+                # Get statcast data for specific date range - using smaller end_row to avoid length limit
                 statcast_result = await session.call_tool(
                     "get_statcast_data",
                     {
@@ -516,12 +531,27 @@ async def test_image_create_bb_profile_plot():
                         "end_dt": "2018-05-04",
                         "verbose": True,
                         "parallel": True,
-                        "end_row": 200,
+                        "end_row": 100,  # Smaller limit to avoid length issue
                     },
                 )
 
                 assert not statcast_result.isError
                 statcast_data = json.loads(statcast_result.content[0].text)
+
+                # Check if we got successful data or still hit length limit
+                if "error" in statcast_data:
+                    # If still too long, use even smaller limit
+                    statcast_result = await session.call_tool(
+                        "get_statcast_data",
+                        {
+                            "start_dt": "2018-05-01",
+                            "end_dt": "2018-05-04",
+                            "verbose": True,
+                            "parallel": True,
+                            "end_row": 50,  # Even smaller limit
+                        },
+                    )
+                    statcast_data = json.loads(statcast_result.content[0].text)
 
                 assert "data" in statcast_data
                 assert len(statcast_data["data"]) > 0
