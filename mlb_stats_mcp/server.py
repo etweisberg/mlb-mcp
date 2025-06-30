@@ -77,7 +77,7 @@ def mcp_tool_wrapper(func):
     wrapper.__signature__ = sig
 
     # Register the tool with MCP
-    return mcp.tool(name=func.__name__)(wrapper)
+    return mcp.tool(name=func.__name__, description=func.__doc__)(wrapper)
 
 
 # Core Data Gathering Tools
