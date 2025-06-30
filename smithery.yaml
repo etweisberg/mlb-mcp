@@ -1,0 +1,25 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'uv', args: ['run','python','-m','mlb_stats_mcp.server'], env: Object.assign({}, config.logLevel?{MLB_STATS_LOG_LEVEL: config.logLevel}:{}, config.logFile?{MLB_STATS_LOG_FILE: config.logFile}:{}) })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required: []
+    properties:
+      logLevel:
+        type: string
+        default: INFO
+        description: Logging level for the MCP server (e.g., DEBUG, INFO, WARNING,
+          ERROR, CRITICAL)
+      logFile:
+        type: string
+        default: ""
+        description: Path to log file; if omitted, logs to stdout
+  exampleConfig:
+    logLevel: DEBUG
+    logFile: /app/logs/server.log

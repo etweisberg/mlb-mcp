@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/etweisberg/mcp-baseball-stats/actions/workflows/test.yml/badge.svg)](https://github.com/etweisberg/baseball/mcp-baseball-stats/workflows/test.yml)
 [![Pre-commit](https://github.com/etweisberg/mcp-baseball-stats/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/etweisberg/mcp-baseball-stats/actions/workflows/pre-commit.yml)
+[![smithery badge](https://smithery.ai/badge/@etweisberg/mlb-mcp)](https://smithery.ai/server/@etweisberg/mlb-mcp)
 
 A Python project that creates a Model Context Protocol (MCP) server for accessing MLB statistics data through the MLB Stats API and `pybaseball` library for statcast, fangraphs, and baseball reference statistics. This server provides structured API access to baseball statistics that can be used with MCP-compatible clients.
 
@@ -45,6 +46,14 @@ source .venv/bin/activate  # On Unix/macOS
 
 ```bash
 uv pip install -e .
+```
+
+### Installing via Smithery
+
+To install MLB Stats Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@etweisberg/mlb-mcp):
+
+```bash
+npx -y @smithery/cli install @etweisberg/mlb-mcp --client claude
 ```
 
 ### Running Tests
