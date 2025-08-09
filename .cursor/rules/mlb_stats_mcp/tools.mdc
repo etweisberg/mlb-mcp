@@ -1,0 +1,8 @@
+---
+description: Updating MCP server tool functions
+alwaysApply: false
+---
+
+When updating any tool functions within `mlb_stats_mcp/tools`
+ensure that you properly update the unit tests to reflect the new logic
+and re-run to verify that the changes are not breaking
