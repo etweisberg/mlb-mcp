@@ -43,7 +43,9 @@ async def test_get_statcast_batter_exitvelo_barrels():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -52,9 +54,15 @@ async def test_get_statcast_batter_exitvelo_barrels():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -77,7 +85,9 @@ async def test_get_statcast_pitcher_exitvelo_barrels():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -86,9 +96,15 @@ async def test_get_statcast_pitcher_exitvelo_barrels():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -111,7 +127,9 @@ async def test_get_statcast_batter_expected_stats():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -120,9 +138,15 @@ async def test_get_statcast_batter_expected_stats():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -145,7 +169,9 @@ async def test_get_statcast_pitcher_expected_stats():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -154,9 +180,15 @@ async def test_get_statcast_pitcher_expected_stats():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -174,10 +206,14 @@ async def test_get_statcast_batter_percentile_ranks():
             await session.initialize()
 
             # Test with valid parameters
-            result = await session.call_tool("get_statcast_batter_percentile_ranks", {"year": 2023})
+            result = await session.call_tool(
+                "get_statcast_batter_percentile_ranks", {"year": 2023}
+            )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -186,9 +222,15 @@ async def test_get_statcast_batter_percentile_ranks():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -211,7 +253,9 @@ async def test_get_statcast_pitcher_percentile_ranks():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -220,9 +264,15 @@ async def test_get_statcast_pitcher_percentile_ranks():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -245,7 +295,9 @@ async def test_get_statcast_batter_pitch_arsenal():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -254,9 +306,15 @@ async def test_get_statcast_batter_pitch_arsenal():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -280,7 +338,9 @@ async def test_get_statcast_pitcher_pitch_arsenal():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -289,9 +349,15 @@ async def test_get_statcast_pitcher_pitch_arsenal():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -304,7 +370,9 @@ async def test_get_statcast_pitcher_pitch_arsenal():
                 {"year": 2023, "minP": 50, "arsenal_type": "avg_spin"},
             )
             # This should succeed or hit length limit, but not a tool error
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
 
             # Test with invalid arsenal type
             result = await session.call_tool(
@@ -330,7 +398,9 @@ async def test_get_statcast_single_game():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -339,9 +409,15 @@ async def test_get_statcast_single_game():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -349,7 +425,9 @@ async def test_get_statcast_single_game():
                 assert "columns" in data, "Response should contain 'columns' key"
 
             # Test with invalid game ID
-            result = await session.call_tool("get_statcast_single_game", {"game_pk": 999999999})
+            result = await session.call_tool(
+                "get_statcast_single_game", {"game_pk": 999999999}
+            )
             assert result.isError, "Expected error response for invalid game ID"
 
 
@@ -362,56 +440,21 @@ async def test_image_create_spraychart_altuve():
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            try:
-                # Get statcast batter data for Jose Altuve - using end_row to limit response size
-                batter_result = await session.call_tool(
-                    "get_statcast_batter_data",
-                    {
-                        "player_id": 514888,
-                        "start_dt": "2019-05-01",
-                        "end_dt": "2019-07-01",
-                        "end_row": 100,  # Limit to first 100 rows
-                    },
-                )
-
-                assert not batter_result.isError
-                batter_data = json.loads(batter_result.content[0].text)
-
-                # Check if we got successful data or length limit error
-                if "error" in batter_data:
-                    # If still too long even with end_row, use smaller limit
-                    batter_result = await session.call_tool(
-                        "get_statcast_batter_data",
-                        {
-                            "player_id": 514888,
-                            "start_dt": "2019-05-01",
-                            "end_dt": "2019-07-01",
-                            "end_row": 50,  # Even smaller limit
-                        },
-                    )
-                    batter_data = json.loads(batter_result.content[0].text)
-
-                assert "data" in batter_data
-                assert len(batter_data["data"]) > 0
-            except Exception as e:
-                raise Exception(f"Exception occured in pre-req batter data: {e}") from e
-
-            # Create spraychart
-            try:
-                spraychart_result = await session.call_tool(
-                    "create_spraychart_plot",
-                    {
-                        "data": batter_data,
-                        "team_stadium": "astros",
-                        "title": "Jose Altuve: May-June 2019",
-                        "colorby": "events",
-                        "size": 120,
-                        "width": 1024,
-                        "height": 1024,
-                    },
-                )
-            except Exception as e:
-                raise Exception(f"Exception occured in spraychart tool: {e}") from e
+            # Directly create spraychart from source parameters
+            spraychart_result = await session.call_tool(
+                "create_spraychart_plot",
+                {
+                    "players": [514888],
+                    "start_dt": "2019-05-01",
+                    "end_dt": "2019-07-01",
+                    "team_stadium": "astros",
+                    "title": "Jose Altuve: May-June 2019",
+                    "colorby": "events",
+                    "size": 120,
+                    "width": 1024,
+                    "height": 1024,
+                },
+            )
 
             assert not spraychart_result.isError
             result_json = json.loads(spraychart_result.content[0].text)
@@ -427,12 +470,118 @@ async def test_image_create_spraychart_altuve():
             assert result_json["metadata"]["colorby"] == "events"
             assert isinstance(result_json["metadata"]["events"], dict)
 
-            # Display the image if SHOW_IMAGE environment variable is set to true
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
                 display_base64_image(result_json["image_base64"])
 
 
 @pytest.mark.asyncio
+async def test_image_create_strike_zone_plot_pitcher_cease():
+    """Test strike zone plot using pitcher data (Dylan Cease example)."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Dylan Cease on 2022-09-03
+            result = await session.call_tool(
+                "create_strike_zone_plot",
+                {
+                    "player_id": 656302,
+                    "player_role": "pitcher",
+                    "start_dt": "2022-09-03",
+                    "end_dt": "2022-09-03",
+                    "title": "Dylan Cease's 1-hitter on Sept 3, 2022",
+                    "colorby": "pitch_type",
+                    "annotation": "pitch_type",
+                    "max_rows": 1000,
+                },
+            )
+
+            assert not result.isError
+            data = json.loads(result.content[0].text)
+            assert data["plot_type"] == "strike_zone"
+            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert data.get("pitch_count", 0) > 0
+            assert data["metadata"]["colorby"] == "pitch_type"
+            assert data["metadata"]["annotation"] == "pitch_type"
+
+            if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
+                display_base64_image(data["image_base64"])
+
+
+@pytest.mark.asyncio
+async def test_image_create_strike_zone_plot_filtered():
+    """Test strike zone plot with filters and different annotation/colorby."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Dylan Cease slider only, annotate launch speed, color by description
+            result = await session.call_tool(
+                "create_strike_zone_plot",
+                {
+                    "player_id": 656302,
+                    "player_role": "pitcher",
+                    "start_dt": "2022-09-03",
+                    "end_dt": "2022-09-03",
+                    "title": "Exit Velocities on Dylan Cease's Slider",
+                    "colorby": "description",
+                    "annotation": "launch_speed",
+                    "filters": {"pitch_type": "SL"},
+                    "max_rows": 1000,
+                },
+            )
+
+            assert not result.isError
+            data = json.loads(result.content[0].text)
+            assert data["plot_type"] == "strike_zone"
+            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert data.get("pitch_count", 0) > 0
+            assert data["metadata"]["colorby"] == "description"
+            assert data["metadata"]["annotation"] == "launch_speed"
+
+            if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
+                display_base64_image(data["image_base64"])
+
+
+@pytest.mark.asyncio
+async def test_image_create_strike_zone_plot_batter_filter():
+    """Test strike zone plot using general statcast date with batter filter (Brandon Marsh example)."""
+    params = simplify_session_setup()
+
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            # Use a date with many pitches and filter to a batter ID
+            result = await session.call_tool(
+                "create_strike_zone_plot",
+                {
+                    "start_dt": "2023-04-23",
+                    "end_dt": "2023-04-23",
+                    "filters": {"batter": 669016},
+                    "title": "Brandon Marsh's Three True Outcome Day",
+                    "colorby": "pitcher",
+                    "annotation": "description",
+                    "max_rows": 2000,
+                },
+            )
+
+            assert not result.isError
+            data = json.loads(result.content[0].text)
+            assert data["plot_type"] == "strike_zone"
+            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert data.get("pitch_count", 0) > 0
+            assert data["metadata"]["colorby"] == "pitcher"
+            assert data["metadata"]["annotation"] == "description"
+
+            if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
+                display_base64_image(data["image_base64"])
+
+
 async def test_image_create_spraychart_plot_votto_aquino():
     """Test spraychart with Joey Votto vs. Aristedes Aquino data."""
     params = simplify_session_setup()
@@ -441,58 +590,21 @@ async def test_image_create_spraychart_plot_votto_aquino():
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            try:
-                # Get statcast batter data for Joey Votto (458015)
-                votto_result = await session.call_tool(
-                    "get_statcast_batter_data",
-                    {
-                        "player_id": 458015,
-                        "start_dt": "2019-08-01",
-                        "end_dt": "2019-10-01",
-                        "end_row": 50,
-                    },
-                )
-
-                assert not votto_result.isError
-                votto_data = json.loads(votto_result.content[0].text)
-
-                # Get statcast batter data for Aristedes Aquino (606157)
-                aquino_result = await session.call_tool(
-                    "get_statcast_batter_data",
-                    {
-                        "player_id": 606157,
-                        "start_dt": "2019-08-01",
-                        "end_dt": "2019-10-01",
-                        "end_row": 50,
-                    },
-                )
-
-                assert not aquino_result.isError
-                aquino_data = json.loads(aquino_result.content[0].text)
-
-                # Combine the data (concatenate the data arrays)
-                combined_data = {"data": votto_data["data"] + aquino_data["data"]}
-
-                assert len(combined_data["data"]) > 0
-            except Exception as e:
-                raise Exception(f"Exception occurred in pre-req batter data: {e}") from e
-
-            # Create spraychart
-            try:
-                spraychart_result = await session.call_tool(
-                    "create_spraychart_plot",
-                    {
-                        "data": combined_data,
-                        "team_stadium": "reds",
-                        "title": "Joey Votto vs. Aristedes Aquino",
-                        "colorby": "player_name",  # Color by player
-                        "size": 120,
-                        "width": 1024,
-                        "height": 1024,
-                    },
-                )
-            except Exception as e:
-                raise Exception(f"Exception occurred in spraychart tool: {e}") from e
+            spraychart_result = await session.call_tool(
+                "create_spraychart_plot",
+                {
+                    "players": [458015, 606157],
+                    "start_dt": "2019-08-01",
+                    "end_dt": "2019-10-01",
+                    "home_team": "CIN",
+                    "team_stadium": "reds",
+                    "title": "Joey Votto vs. Aristedes Aquino",
+                    "colorby": "player_name",
+                    "size": 120,
+                    "width": 1024,
+                    "height": 1024,
+                },
+            )
 
             assert not spraychart_result.isError
             result_json = json.loads(spraychart_result.content[0].text)
@@ -508,7 +620,6 @@ async def test_image_create_spraychart_plot_votto_aquino():
             assert result_json["metadata"]["colorby"] == "player_name"
             assert isinstance(result_json["metadata"]["events"], dict)
 
-            # Display the image if SHOW_IMAGE environment variable is set to true
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
                 display_base64_image(result_json["image_base64"])
 
@@ -522,53 +633,15 @@ async def test_image_create_bb_profile_plot():
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            try:
-                # Get statcast data for specific date range - using smaller end_row to avoid length limit
-                statcast_result = await session.call_tool(
-                    "get_statcast_data",
-                    {
-                        "start_dt": "2018-05-01",
-                        "end_dt": "2018-05-04",
-                        "verbose": True,
-                        "parallel": True,
-                        "end_row": 100,  # Smaller limit to avoid length issue
-                    },
-                )
-
-                assert not statcast_result.isError
-                statcast_data = json.loads(statcast_result.content[0].text)
-
-                # Check if we got successful data or still hit length limit
-                if "error" in statcast_data:
-                    # If still too long, use even smaller limit
-                    statcast_result = await session.call_tool(
-                        "get_statcast_data",
-                        {
-                            "start_dt": "2018-05-01",
-                            "end_dt": "2018-05-04",
-                            "verbose": True,
-                            "parallel": True,
-                            "end_row": 50,  # Even smaller limit
-                        },
-                    )
-                    statcast_data = json.loads(statcast_result.content[0].text)
-
-                assert "data" in statcast_data
-                assert len(statcast_data["data"]) > 0
-            except Exception as e:
-                raise Exception(f"Exception occurred in pre-req statcast data: {e}") from e
-
-            # Create bb_profile plot
-            try:
-                bb_profile_result = await session.call_tool(
-                    "create_bb_profile_plot",
-                    {
-                        "data": statcast_data,
-                        "parameter": "launch_angle",
-                    },
-                )
-            except Exception as e:
-                raise Exception(f"Exception occurred in bb_profile tool: {e}") from e
+            bb_profile_result = await session.call_tool(
+                "create_bb_profile_plot",
+                {
+                    "parameter": "launch_angle",
+                    "start_dt": "2018-05-01",
+                    "end_dt": "2018-05-04",
+                    "max_rows": 200,
+                },
+            )
 
             assert not bb_profile_result.isError
             result_json = json.loads(bb_profile_result.content[0].text)
@@ -582,7 +655,6 @@ async def test_image_create_bb_profile_plot():
             assert "metadata" in result_json
             assert isinstance(result_json["metadata"]["bb_types"], dict)
 
-            # Display the image if SHOW_IMAGE environment variable is set to true
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
                 display_base64_image(result_json["image_base64"])
 
@@ -603,7 +675,9 @@ async def test_image_plot_teams():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -612,23 +686,31 @@ async def test_image_plot_teams():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
                 assert "count" in data, "Response should contain 'count' key"
                 assert "columns" in data, "Response should contain 'columns' key"
 
-            # Create plot_teams visualization
+            # Create plot_teams visualization directly from source parameters
             plot_result = await session.call_tool(
                 "create_teams_plot",
                 {
-                    "data": data,
                     "x_axis": "HR",
                     "y_axis": "BB",
                     "title": "Team HR vs BB (2023)",
+                    "dataset": "batting",
+                    "start_season": 2023,
+                    "league": "all",
                 },
             )
 
@@ -641,8 +723,12 @@ async def test_image_plot_teams():
             plot_data = json.loads(plot_result.content[0].text)
             assert "plot_type" in plot_data, "Response should contain 'plot_type' key"
             assert plot_data["plot_type"] == "teams"
-            assert "image_base64" in plot_data, "Response should contain 'image_base64' key"
-            assert len(plot_data["image_base64"]) > 100, "Image data should be substantial"
+            assert (
+                "image_base64" in plot_data
+            ), "Response should contain 'image_base64' key"
+            assert (
+                len(plot_data["image_base64"]) > 100
+            ), "Image data should be substantial"
             assert "team_count" in plot_data, "Response should contain 'team_count' key"
             assert plot_data["team_count"] > 0, "Should have team data"
             assert "x_axis" in plot_data, "Response should contain 'x_axis' key"
@@ -665,10 +751,14 @@ async def test_get_pitching_stats_bref():
             await session.initialize()
 
             # Test with valid parameters
-            result = await session.call_tool("get_pitching_stats_bref", {"season": 2023})
+            result = await session.call_tool(
+                "get_pitching_stats_bref", {"season": 2023}
+            )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -677,9 +767,15 @@ async def test_get_pitching_stats_bref():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -704,7 +800,9 @@ async def test_get_pitching_stats_range():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -713,9 +811,15 @@ async def test_get_pitching_stats_range():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -739,7 +843,9 @@ async def test_get_pitching_stats():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -748,9 +854,15 @@ async def test_get_pitching_stats():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -774,7 +886,9 @@ async def test_get_schedule_and_record():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -783,9 +897,15 @@ async def test_get_schedule_and_record():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -809,7 +929,9 @@ async def test_get_player_splits():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -818,9 +940,15 @@ async def test_get_player_splits():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -869,7 +997,9 @@ async def test_get_team_batting():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -878,9 +1008,15 @@ async def test_get_team_batting():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -904,7 +1040,9 @@ async def test_get_team_fielding():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -913,9 +1051,15 @@ async def test_get_team_fielding():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -939,7 +1083,9 @@ async def test_get_team_pitching():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -948,9 +1094,15 @@ async def test_get_team_pitching():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -974,7 +1126,9 @@ async def test_get_top_prospects():
             )
 
             # Verify successful response or proper length limit handling
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -983,9 +1137,15 @@ async def test_get_top_prospects():
             # Check if we got successful data or length limit error
             if "error" in data:
                 # Verify correct length limitation structure
-                assert "length" in data, "Length limit response should contain 'length' key"
-                assert "limit" in data, "Length limit response should contain 'limit' key"
-                assert "total_rows" in data, "Length limit response should contain 'total_rows' key"
+                assert (
+                    "length" in data
+                ), "Length limit response should contain 'length' key"
+                assert (
+                    "limit" in data
+                ), "Length limit response should contain 'limit' key"
+                assert (
+                    "total_rows" in data
+                ), "Length limit response should contain 'total_rows' key"
             else:
                 # Verify successful response structure
                 assert "data" in data, "Response should contain 'data' key"
@@ -1009,7 +1169,9 @@ async def test_statcast_length_limit_exceeded():
             )
 
             # Verify response structure - could be success or length limit error
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1023,7 +1185,9 @@ async def test_statcast_length_limit_exceeded():
 
             # Try new call with end_row (use conservative calculation)
             bytes_per_row = data["length"] // data["total_rows"]
-            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            max_safe_rows = (
+                data["limit"] * 0.8
+            ) // bytes_per_row  # 80% of limit for safety
             new_row_estimate = max(1, int(max_safe_rows))
             result = await session.call_tool(
                 "get_statcast_data",
@@ -1061,7 +1225,9 @@ async def test_statcast_batter_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1075,7 +1241,9 @@ async def test_statcast_batter_length_limit_handling():
 
             # Try new call with end_row (use conservative calculation)
             bytes_per_row = data["length"] // data["total_rows"]
-            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            max_safe_rows = (
+                data["limit"] * 0.8
+            ) // bytes_per_row  # 80% of limit for safety
             new_row_estimate = max(1, int(max_safe_rows))
             result = await session.call_tool(
                 "get_statcast_batter_data",
@@ -1114,7 +1282,9 @@ async def test_statcast_pitcher_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1128,7 +1298,9 @@ async def test_statcast_pitcher_length_limit_handling():
 
             # Try new call with end_row (use conservative calculation)
             bytes_per_row = data["length"] // data["total_rows"]
-            max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+            max_safe_rows = (
+                data["limit"] * 0.8
+            ) // bytes_per_row  # 80% of limit for safety
             new_row_estimate = max(1, int(max_safe_rows))
             result = await session.call_tool(
                 "get_statcast_pitcher_data",
@@ -1166,7 +1338,9 @@ async def test_statcast_batter_exitvelo_barrels_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1181,7 +1355,9 @@ async def test_statcast_batter_exitvelo_barrels_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_batter_exitvelo_barrels",
@@ -1223,7 +1399,9 @@ async def test_statcast_pitcher_exitvelo_barrels_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1238,7 +1416,9 @@ async def test_statcast_pitcher_exitvelo_barrels_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_pitcher_exitvelo_barrels",
@@ -1280,7 +1460,9 @@ async def test_statcast_batter_expected_stats_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1295,7 +1477,9 @@ async def test_statcast_batter_expected_stats_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_batter_expected_stats",
@@ -1337,7 +1521,9 @@ async def test_statcast_pitcher_expected_stats_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1352,7 +1538,9 @@ async def test_statcast_pitcher_expected_stats_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_pitcher_expected_stats",
@@ -1393,7 +1581,9 @@ async def test_statcast_batter_percentile_ranks_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1408,7 +1598,9 @@ async def test_statcast_batter_percentile_ranks_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_batter_percentile_ranks",
@@ -1448,7 +1640,9 @@ async def test_statcast_pitcher_percentile_ranks_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1463,7 +1657,9 @@ async def test_statcast_pitcher_percentile_ranks_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_pitcher_percentile_ranks",
@@ -1504,7 +1700,9 @@ async def test_statcast_batter_pitch_arsenal_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1519,7 +1717,9 @@ async def test_statcast_batter_pitch_arsenal_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_batter_pitch_arsenal",
@@ -1562,7 +1762,9 @@ async def test_statcast_pitcher_pitch_arsenal_length_limit_handling():
             )
 
             # Verify response structure
-            assert not result.isError, "Expected successful response or length limit handling"
+            assert (
+                not result.isError
+            ), "Expected successful response or length limit handling"
             assert result.content, "No content returned from tool"
             assert result.content[0].type == "text", "Expected text response"
 
@@ -1577,7 +1779,9 @@ async def test_statcast_pitcher_pitch_arsenal_length_limit_handling():
 
                 # Try new call with end_row (use conservative calculation)
                 bytes_per_row = data["length"] // data["total_rows"]
-                max_safe_rows = (data["limit"] * 0.8) // bytes_per_row  # 80% of limit for safety
+                max_safe_rows = (
+                    data["limit"] * 0.8
+                ) // bytes_per_row  # 80% of limit for safety
                 new_row_estimate = max(1, int(max_safe_rows))
                 result = await session.call_tool(
                     "get_statcast_pitcher_pitch_arsenal",
@@ -1613,7 +1817,11 @@ async def test_statcast_single_game_with_truncation():
             # First, get a game that might have a lot of data
             result = await session.call_tool(
                 "get_statcast_single_game",
-                {"game_pk": 717953, "start_row": 0, "end_row": 10},  # Just first 10 rows
+                {
+                    "game_pk": 717953,
+                    "start_row": 0,
+                    "end_row": 10,
+                },  # Just first 10 rows
             )
 
             # Verify successful response

@@ -137,7 +137,9 @@ async def get_standings(
     """
     Returns a dict of standings data for a given league/division and season.
     """
-    return await mlb_statsapi_tools.get_standings(league_id, division_id, season, standings_types)
+    return await mlb_statsapi_tools.get_standings(
+        league_id, division_id, season, standings_types
+    )
 
 
 # Team and Player Analysis Tools
@@ -435,7 +437,9 @@ async def get_statcast_batter_expected_stats(
 
     Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_expected_stats(year, minPA, start_row, end_row)
+    return await statcast_tools.get_statcast_batter_expected_stats(
+        year, minPA, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -462,7 +466,9 @@ async def get_statcast_pitcher_expected_stats(
 
     Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_expected_stats(year, minPA, start_row, end_row)
+    return await statcast_tools.get_statcast_pitcher_expected_stats(
+        year, minPA, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -481,7 +487,9 @@ async def get_statcast_batter_percentile_ranks(
 
     Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_percentile_ranks(year, start_row, end_row)
+    return await statcast_tools.get_statcast_batter_percentile_ranks(
+        year, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -503,7 +511,9 @@ async def get_statcast_pitcher_percentile_ranks(
 
     Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_pitcher_percentile_ranks(year, start_row, end_row)
+    return await statcast_tools.get_statcast_pitcher_percentile_ranks(
+        year, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -529,7 +539,9 @@ async def get_statcast_batter_pitch_arsenal(
 
     Use start_row and end_row to limit response size when dealing with large datasets.
     """
-    return await statcast_tools.get_statcast_batter_pitch_arsenal(year, minPA, start_row, end_row)
+    return await statcast_tools.get_statcast_batter_pitch_arsenal(
+        year, minPA, start_row, end_row
+    )
 
 
 @mcp_tool_wrapper
@@ -587,11 +599,19 @@ async def get_statcast_single_game(
 
 @mcp_tool_wrapper
 async def create_strike_zone_plot(
-    data: Dict[str, Any],
     title: str = "",
     colorby: str = "pitch_type",
     legend_title: str = "",
     annotation: str = "pitch_type",
+    *,
+    player_id: Optional[int] = None,
+    player_role: str = "pitcher",
+    start_dt: Optional[str] = None,
+    end_dt: Optional[str] = None,
+    game_pk: Optional[int] = None,
+    team: Optional[str] = None,
+    filters: Optional[Dict[str, Any]] = None,
+    max_rows: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Produces a pitches overlaid on a strike zone using StatCast data
@@ -612,13 +632,23 @@ async def create_strike_zone_plot(
               'launch_speed', or something else in the data
     """
     return await pybaseball_plotting_tools.create_strike_zone_plot(
-        data, title, colorby, legend_title, annotation
+        title,
+        colorby,
+        legend_title,
+        annotation,
+        player_id=player_id,
+        player_role=player_role,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        game_pk=game_pk,
+        team=team,
+        filters=filters,
+        max_rows=max_rows,
     )
 
 
 @mcp_tool_wrapper
 async def create_spraychart_plot(
-    data: Dict[str, Any],
     team_stadium: str = "generic",
     title: str = "",
     colorby: str = "events",
@@ -626,6 +656,15 @@ async def create_spraychart_plot(
     size: int = 100,
     width: int = 500,
     height: int = 500,
+    *,
+    players: Optional[list[int]] = None,
+    start_dt: Optional[str] = None,
+    end_dt: Optional[str] = None,
+    home_team: Optional[str] = None,
+    game_pk: Optional[int] = None,
+    team: Optional[str] = None,
+    filters: Optional[Dict[str, Any]] = None,
+    max_rows: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Produces a spraychart using statcast data overlayed on specified stadium
@@ -651,14 +690,36 @@ async def create_spraychart_plot(
             Optional: Height of plot
     """
     return await pybaseball_plotting_tools.create_spraychart_plot(
-        data, team_stadium, title, colorby, legend_title, size, width, height
+        team_stadium,
+        title,
+        colorby,
+        legend_title,
+        size,
+        width,
+        height,
+        players=players,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        home_team=home_team,
+        game_pk=game_pk,
+        team=team,
+        filters=filters,
+        max_rows=max_rows,
     )
 
 
 @mcp_tool_wrapper
 async def create_bb_profile_plot(
-    data: Dict[str, Any],
     parameter: str = "launch_angle",
+    *,
+    player_id: Optional[int] = None,
+    player_role: str = "batter",
+    start_dt: Optional[str] = None,
+    end_dt: Optional[str] = None,
+    game_pk: Optional[int] = None,
+    team: Optional[str] = None,
+    filters: Optional[Dict[str, Any]] = None,
+    max_rows: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Plots a given StatCast parameter split by bb_type
 
@@ -669,15 +730,31 @@ async def create_bb_profile_plot(
         parameter: (str), default = 'launch_angle'
             Optional: Parameter to plot
     """
-    return await pybaseball_plotting_tools.create_bb_profile_plot(data, parameter)
+    return await pybaseball_plotting_tools.create_bb_profile_plot(
+        parameter,
+        player_id=player_id,
+        player_role=player_role,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        game_pk=game_pk,
+        team=team,
+        filters=filters,
+        max_rows=max_rows,
+    )
 
 
 @mcp_tool_wrapper
 async def create_teams_plot(
-    data: Dict[str, Any],
     x_axis: str,
     y_axis: str,
     title: Optional[str] = None,
+    *,
+    dataset: str = "batting",
+    start_season: Optional[int] = None,
+    end_season: Optional[int] = None,
+    league: str = "all",
+    ind: int = 1,
+    filters: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Plots a scatter plot with each MLB team
 
@@ -692,7 +769,25 @@ async def create_teams_plot(
         title: (str), default = None
             Optional: Title of the plot
     """
-    return await pybaseball_plotting_tools.create_teams_plot(data, x_axis, y_axis, title)
+    return await pybaseball_plotting_tools.create_teams_plot(
+        x_axis,
+        y_axis,
+        title,
+        dataset=dataset,
+        start_season=start_season,
+        end_season=end_season,
+        league=league,
+        ind=ind,
+        filters=filters,
+    )
+
+
+@mcp_tool_wrapper
+async def create_stadium_plot(
+    team: str = "generic", width: int = 500, height: int = 500
+) -> Dict[str, Any]:
+    """Plot the outline of a specified team's stadium using MLBAM coordinates."""
+    return await pybaseball_plotting_tools.create_stadium_plot(team, width, height)
 
 
 # Supplemental pybaseball tools
@@ -845,7 +940,9 @@ async def get_team_batting(
         (or the only season if you do not specify an end_season)
     end_season : int : final season you want data for
     """
-    return await pybaseball_supp_tools.get_team_batting(start_season, end_season, league, ind)
+    return await pybaseball_supp_tools.get_team_batting(
+        start_season, end_season, league, ind
+    )
 
 
 @mcp_tool_wrapper
@@ -865,7 +962,9 @@ async def get_team_fielding(
         (or the only season if you do not specify an end_season)
     end_season      : int : final season you want data for
     """
-    return await pybaseball_supp_tools.get_team_fielding(start_season, end_season, league, ind)
+    return await pybaseball_supp_tools.get_team_fielding(
+        start_season, end_season, league, ind
+    )
 
 
 @mcp_tool_wrapper
@@ -884,7 +983,9 @@ async def get_team_pitching(
         (or the only season if you do not specify an end_season)
     end_season : int : final season you want data for
     """
-    return await pybaseball_supp_tools.get_team_pitching(start_season, end_season, league, ind)
+    return await pybaseball_supp_tools.get_team_pitching(
+        start_season, end_season, league, ind
+    )
 
 
 @mcp_tool_wrapper
