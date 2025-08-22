@@ -5,11 +5,13 @@ Tests for pybaseball tools.
 import json
 import os
 from pathlib import Path
+from typing import Optional
 
 import pytest
 from dotenv import load_dotenv
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
+import requests
 
 from mlb_stats_mcp.utils.images import display_base64_image
 from mlb_stats_mcp.utils.logging_config import setup_logging
@@ -19,13 +21,32 @@ load_dotenv(env_path)
 
 logger = setup_logging("[TEST] pybaseball")
 
-logger.debug(f"SHOW_IMAGE SET TO {os.environ.get('SHOW_IMAGE')}")
+logger.debug("SHOW_IMAGE SET TO %s", os.environ.get("SHOW_IMAGE"))
+
+
+# Skip image-generating tests if AWS S3 is not configured
+S3_NOT_CONFIGURED = not (
+    os.environ.get("AWS_S3_BUCKET")
+    and os.environ.get("AWS_ACCESS_KEY")
+    and os.environ.get("AWS_SECRET_KEY")
+)
+
+PLOTTING_DISABLED = os.environ.get("ENABLE_PLOTTING", "false").lower() != "true"
 
 
 def simplify_session_setup():
     """Helper to create server params for tests."""
     server_path = Path(__file__).parent.parent / "server.py"
     return StdioServerParameters(command="python", args=[str(server_path)], env=None)
+
+
+def assert_reachable_image(url: str, timeout_seconds: int = 10) -> None:
+    """Assert that a given URL is reachable and serves an image."""
+    response = requests.get(url, timeout=timeout_seconds)
+    assert response.status_code == 200, f"Non-200 status code: {response.status_code}"
+    content_type: Optional[str] = response.headers.get("Content-Type", "")
+    assert "image" in content_type.lower(), f"Unexpected content-type: {content_type}"
+    assert response.content and len(response.content) > 20, "Empty image content"
 
 
 @pytest.mark.asyncio
@@ -432,6 +453,9 @@ async def test_get_statcast_single_game():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_spraychart_altuve():
     """Test the create_spraychart_plot tool following the Altuve example."""
     params = simplify_session_setup()
@@ -461,8 +485,9 @@ async def test_image_create_spraychart_altuve():
 
             # Verify response structure
             assert result_json["plot_type"] == "spraychart"
-            assert "image_base64" in result_json
-            assert len(result_json["image_base64"]) > 100
+            assert "image_url" in result_json
+            assert str(result_json["image_url"]).startswith("http")
+            assert_reachable_image(result_json["image_url"])
             assert result_json["hit_count"] > 0
             assert result_json["stadium"] == "astros"
             assert result_json["title"] == "Jose Altuve: May-June 2019"
@@ -471,10 +496,13 @@ async def test_image_create_spraychart_altuve():
             assert isinstance(result_json["metadata"]["events"], dict)
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(result_json["image_base64"])
+                display_base64_image(result_json["image_url"])
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_strike_zone_plot_pitcher_cease():
     """Test strike zone plot using pitcher data (Dylan Cease example)."""
     params = simplify_session_setup()
@@ -501,16 +529,20 @@ async def test_image_create_strike_zone_plot_pitcher_cease():
             assert not result.isError
             data = json.loads(result.content[0].text)
             assert data["plot_type"] == "strike_zone"
-            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert "image_url" in data and str(data["image_url"]).startswith("http")
+            assert_reachable_image(data["image_url"])
             assert data.get("pitch_count", 0) > 0
             assert data["metadata"]["colorby"] == "pitch_type"
             assert data["metadata"]["annotation"] == "pitch_type"
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(data["image_base64"])
+                display_base64_image(data["image_url"])
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_strike_zone_plot_filtered():
     """Test strike zone plot with filters and different annotation/colorby."""
     params = simplify_session_setup()
@@ -538,16 +570,20 @@ async def test_image_create_strike_zone_plot_filtered():
             assert not result.isError
             data = json.loads(result.content[0].text)
             assert data["plot_type"] == "strike_zone"
-            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert "image_url" in data and str(data["image_url"]).startswith("http")
+            assert_reachable_image(data["image_url"])
             assert data.get("pitch_count", 0) > 0
             assert data["metadata"]["colorby"] == "description"
             assert data["metadata"]["annotation"] == "launch_speed"
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(data["image_base64"])
+                display_base64_image(data["image_url"])
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_strike_zone_plot_batter_filter():
     """Test strike zone plot using general statcast date with batter filter (Brandon Marsh example)."""
     params = simplify_session_setup()
@@ -573,15 +609,19 @@ async def test_image_create_strike_zone_plot_batter_filter():
             assert not result.isError
             data = json.loads(result.content[0].text)
             assert data["plot_type"] == "strike_zone"
-            assert "image_base64" in data and len(data["image_base64"]) > 100
+            assert "image_url" in data and str(data["image_url"]).startswith("http")
+            assert_reachable_image(data["image_url"])
             assert data.get("pitch_count", 0) > 0
             assert data["metadata"]["colorby"] == "pitcher"
             assert data["metadata"]["annotation"] == "description"
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(data["image_base64"])
+                display_base64_image(data["image_url"])
 
 
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_spraychart_plot_votto_aquino():
     """Test spraychart with Joey Votto vs. Aristedes Aquino data."""
     params = simplify_session_setup()
@@ -611,8 +651,9 @@ async def test_image_create_spraychart_plot_votto_aquino():
 
             # Verify response structure
             assert result_json["plot_type"] == "spraychart"
-            assert "image_base64" in result_json
-            assert len(result_json["image_base64"]) > 100
+            assert "image_url" in result_json
+            assert str(result_json["image_url"]).startswith("http")
+            assert_reachable_image(result_json["image_url"])
             assert result_json["hit_count"] > 0
             assert result_json["stadium"] == "reds"
             assert result_json["title"] == "Joey Votto vs. Aristedes Aquino"
@@ -621,10 +662,13 @@ async def test_image_create_spraychart_plot_votto_aquino():
             assert isinstance(result_json["metadata"]["events"], dict)
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(result_json["image_base64"])
+                display_base64_image(result_json["image_url"])
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_create_bb_profile_plot():
     """Test bb_profile plot recreating the example logic."""
     params = simplify_session_setup()
@@ -648,18 +692,22 @@ async def test_image_create_bb_profile_plot():
 
             # Verify response structure
             assert result_json["plot_type"] == "bb_profile"
-            assert "image_base64" in result_json
-            assert len(result_json["image_base64"]) > 100
+            assert "image_url" in result_json
+            assert str(result_json["image_url"]).startswith("http")
+            assert_reachable_image(result_json["image_url"])
             assert result_json["bb_count"] > 0
             assert result_json["parameter"] == "launch_angle"
             assert "metadata" in result_json
             assert isinstance(result_json["metadata"]["bb_types"], dict)
 
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(result_json["image_base64"])
+                display_base64_image(result_json["image_url"])
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    S3_NOT_CONFIGURED or PLOTTING_DISABLED, reason="S3 or plotting not enabled"
+)
 async def test_image_plot_teams():
     """Test plotting teams based on team batting data."""
     params = simplify_session_setup()
@@ -723,12 +771,11 @@ async def test_image_plot_teams():
             plot_data = json.loads(plot_result.content[0].text)
             assert "plot_type" in plot_data, "Response should contain 'plot_type' key"
             assert plot_data["plot_type"] == "teams"
-            assert (
-                "image_base64" in plot_data
-            ), "Response should contain 'image_base64' key"
-            assert (
-                len(plot_data["image_base64"]) > 100
-            ), "Image data should be substantial"
+            assert "image_url" in plot_data, "Response should contain 'image_url' key"
+            assert str(plot_data["image_url"]).startswith(
+                "http"
+            ), "Image URL should be presigned HTTP(S)"
+            assert_reachable_image(plot_data["image_url"])
             assert "team_count" in plot_data, "Response should contain 'team_count' key"
             assert plot_data["team_count"] > 0, "Should have team data"
             assert "x_axis" in plot_data, "Response should contain 'x_axis' key"
@@ -738,7 +785,7 @@ async def test_image_plot_teams():
 
             # Display the image if SHOW_IMAGE environment variable is set to true
             if os.environ.get("SHOW_IMAGE", "false").lower() == "true":
-                display_base64_image(plot_data["image_base64"])
+                display_base64_image(plot_data["image_url"])
 
 
 @pytest.mark.asyncio

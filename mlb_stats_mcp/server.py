@@ -6,6 +6,7 @@ import contextlib
 import inspect
 import sys
 from typing import Any, Dict, Optional
+import os
 
 import uvicorn
 from dotenv import load_dotenv
@@ -53,7 +54,7 @@ def _register_prompts():
         # Add to global namespace so it's accessible
         globals()[name] = func
 
-        logger.debug(f"Registered prompt function: {name}")
+        logger.debug("Registered prompt function: %s", name)
 
 
 # Register all prompts automatically
@@ -67,11 +68,11 @@ def mcp_tool_wrapper(func):
     # Create a wrapper function with the same signature as the original function
     async def wrapper(*args, **kwargs):
         try:
-            logger.info(f"tool {func.__name__} called")
+            logger.info("tool %s called", func.__name__)
             return await func(*args, **kwargs)
         except Exception as e:
-            logger.error(f"Error in {func.__name__}: {e!s}")
-            raise Exception(f"Error in {func.__name__}: {e!s}") from e
+            logger.error("Error in %s: %s", func.__name__, e)
+            raise RuntimeError(f"Error in {func.__name__}: {e!s}") from e
 
     # Copy the signature from the original function
     wrapper.__signature__ = sig
@@ -597,197 +598,142 @@ async def get_statcast_single_game(
     return await statcast_tools.get_statcast_single_game(game_pk, start_row, end_row)
 
 
-@mcp_tool_wrapper
-async def create_strike_zone_plot(
-    title: str = "",
-    colorby: str = "pitch_type",
-    legend_title: str = "",
-    annotation: str = "pitch_type",
-    *,
-    player_id: Optional[int] = None,
-    player_role: str = "pitcher",
-    start_dt: Optional[str] = None,
-    end_dt: Optional[str] = None,
-    game_pk: Optional[int] = None,
-    team: Optional[str] = None,
-    filters: Optional[Dict[str, Any]] = None,
-    max_rows: Optional[int] = None,
-) -> Dict[str, Any]:
-    """
-    Produces a pitches overlaid on a strike zone using StatCast data
+ENABLE_PLOTTING = os.environ.get("ENABLE_PLOTTING", "false").lower() == "true"
 
-    Args:
-        data: (pandas.DataFrame)
-            StatCast pandas.DataFrame of StatCast pitcher data
-        title: (str), default = ''
-            Optional: Title of plot
-        colorby: (str), default = 'pitch_type'
-            Optional: Which category to color the mark with.
-            'pitch_type', 'pitcher', 'description' or a column within data
-        legend_title: (str), default = based on colorby
-            Optional: Title for the legend
-        annotation: (str), default = 'pitch_type'
-            Optional: What to annotate in the marker.
-            'pitch_type', 'release_speed', 'effective_speed',
-              'launch_speed', or something else in the data
-    """
-    return await pybaseball_plotting_tools.create_strike_zone_plot(
-        title,
-        colorby,
-        legend_title,
-        annotation,
-        player_id=player_id,
-        player_role=player_role,
-        start_dt=start_dt,
-        end_dt=end_dt,
-        game_pk=game_pk,
-        team=team,
-        filters=filters,
-        max_rows=max_rows,
-    )
+if ENABLE_PLOTTING:
 
+    @mcp_tool_wrapper
+    async def create_strike_zone_plot(
+        title: str = "",
+        colorby: str = "pitch_type",
+        legend_title: str = "",
+        annotation: str = "pitch_type",
+        *,
+        player_id: Optional[int] = None,
+        player_role: str = "pitcher",
+        start_dt: Optional[str] = None,
+        end_dt: Optional[str] = None,
+        game_pk: Optional[int] = None,
+        team: Optional[str] = None,
+        filters: Optional[Dict[str, Any]] = None,
+        max_rows: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Produces a pitches overlaid on a strike zone using StatCast data
+        """
+        return await pybaseball_plotting_tools.create_strike_zone_plot(
+            title,
+            colorby,
+            legend_title,
+            annotation,
+            player_id=player_id,
+            player_role=player_role,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            game_pk=game_pk,
+            team=team,
+            filters=filters,
+            max_rows=max_rows,
+        )
 
-@mcp_tool_wrapper
-async def create_spraychart_plot(
-    team_stadium: str = "generic",
-    title: str = "",
-    colorby: str = "events",
-    legend_title: str = "",
-    size: int = 100,
-    width: int = 500,
-    height: int = 500,
-    *,
-    players: Optional[list[int]] = None,
-    start_dt: Optional[str] = None,
-    end_dt: Optional[str] = None,
-    home_team: Optional[str] = None,
-    game_pk: Optional[int] = None,
-    team: Optional[str] = None,
-    filters: Optional[Dict[str, Any]] = None,
-    max_rows: Optional[int] = None,
-) -> Dict[str, Any]:
-    """
-    Produces a spraychart using statcast data overlayed on specified stadium
+    @mcp_tool_wrapper
+    async def create_spraychart_plot(
+        team_stadium: str = "generic",
+        title: str = "",
+        colorby: str = "events",
+        legend_title: str = "",
+        size: int = 100,
+        width: int = 500,
+        height: int = 500,
+        *,
+        players: Optional[list[int]] = None,
+        start_dt: Optional[str] = None,
+        end_dt: Optional[str] = None,
+        home_team: Optional[str] = None,
+        game_pk: Optional[int] = None,
+        team: Optional[str] = None,
+        filters: Optional[Dict[str, Any]] = None,
+        max_rows: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Produces a spraychart using statcast data overlaid on specified stadium
+        """
+        return await pybaseball_plotting_tools.create_spraychart_plot(
+            team_stadium,
+            title,
+            colorby,
+            legend_title,
+            size,
+            width,
+            height,
+            players=players,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            home_team=home_team,
+            game_pk=game_pk,
+            team=team,
+            filters=filters,
+            max_rows=max_rows,
+        )
 
+    @mcp_tool_wrapper
+    async def create_bb_profile_plot(
+        parameter: str = "launch_angle",
+        *,
+        player_id: Optional[int] = None,
+        player_role: str = "batter",
+        start_dt: Optional[str] = None,
+        end_dt: Optional[str] = None,
+        game_pk: Optional[int] = None,
+        team: Optional[str] = None,
+        filters: Optional[Dict[str, Any]] = None,
+        max_rows: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Plots a given StatCast parameter split by bb_type"""
+        return await pybaseball_plotting_tools.create_bb_profile_plot(
+            parameter,
+            player_id=player_id,
+            player_role=player_role,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            game_pk=game_pk,
+            team=team,
+            filters=filters,
+            max_rows=max_rows,
+        )
 
-    Args:
-        data: (pandas.DataFrame)
-            StatCast pandas.DataFrame of StatCast batter data
-        team_stadium: (str)
-            Team whose stadium the hits will be overlaid on
-        title: (str), default = ''
-            Optional: Title of plot
-        size: (int), default = 100
-            Optional: Size of hit circles on plot
-        colorby: (str), default = 'events'
-            Optional: Which category to color the mark with.
-                'events','player', or a column within data
-        legend_title: (str), default = based on colorby
-            Optional: Title for the legend
-        width: (int), default = 500
-            Optional: Width of plot (not counting the legend)
-        height: (int), default = 500
-            Optional: Height of plot
-    """
-    return await pybaseball_plotting_tools.create_spraychart_plot(
-        team_stadium,
-        title,
-        colorby,
-        legend_title,
-        size,
-        width,
-        height,
-        players=players,
-        start_dt=start_dt,
-        end_dt=end_dt,
-        home_team=home_team,
-        game_pk=game_pk,
-        team=team,
-        filters=filters,
-        max_rows=max_rows,
-    )
+    @mcp_tool_wrapper
+    async def create_teams_plot(
+        x_axis: str,
+        y_axis: str,
+        title: Optional[str] = None,
+        *,
+        dataset: str = "batting",
+        start_season: Optional[int] = None,
+        end_season: Optional[int] = None,
+        league: str = "all",
+        ind: int = 1,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Plots a scatter plot with each MLB team"""
+        return await pybaseball_plotting_tools.create_teams_plot(
+            x_axis,
+            y_axis,
+            title,
+            dataset=dataset,
+            start_season=start_season,
+            end_season=end_season,
+            league=league,
+            ind=ind,
+            filters=filters,
+        )
 
-
-@mcp_tool_wrapper
-async def create_bb_profile_plot(
-    parameter: str = "launch_angle",
-    *,
-    player_id: Optional[int] = None,
-    player_role: str = "batter",
-    start_dt: Optional[str] = None,
-    end_dt: Optional[str] = None,
-    game_pk: Optional[int] = None,
-    team: Optional[str] = None,
-    filters: Optional[Dict[str, Any]] = None,
-    max_rows: Optional[int] = None,
-) -> Dict[str, Any]:
-    """Plots a given StatCast parameter split by bb_type
-
-    Args:
-        df: (pandas.DataFrame)
-            pandas.DataFrame of StatCast batter data
-            (retrieved through statcast, statcast_batter, etc)
-        parameter: (str), default = 'launch_angle'
-            Optional: Parameter to plot
-    """
-    return await pybaseball_plotting_tools.create_bb_profile_plot(
-        parameter,
-        player_id=player_id,
-        player_role=player_role,
-        start_dt=start_dt,
-        end_dt=end_dt,
-        game_pk=game_pk,
-        team=team,
-        filters=filters,
-        max_rows=max_rows,
-    )
-
-
-@mcp_tool_wrapper
-async def create_teams_plot(
-    x_axis: str,
-    y_axis: str,
-    title: Optional[str] = None,
-    *,
-    dataset: str = "batting",
-    start_season: Optional[int] = None,
-    end_season: Optional[int] = None,
-    league: str = "all",
-    ind: int = 1,
-    filters: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
-    """Plots a scatter plot with each MLB team
-
-    Args:
-        data: (pandas.DataFrame)
-            pandas.DataFrame of Fangraphs team data
-                (retrieved through team_batting or team_pitching)
-        x_axis: (str)
-            Stat name to be plotted as the x_axis of the chart
-        y_axis: (str)
-            Stat name to be plotted as the y_axis of the chart
-        title: (str), default = None
-            Optional: Title of the plot
-    """
-    return await pybaseball_plotting_tools.create_teams_plot(
-        x_axis,
-        y_axis,
-        title,
-        dataset=dataset,
-        start_season=start_season,
-        end_season=end_season,
-        league=league,
-        ind=ind,
-        filters=filters,
-    )
-
-
-@mcp_tool_wrapper
-async def create_stadium_plot(
-    team: str = "generic", width: int = 500, height: int = 500
-) -> Dict[str, Any]:
-    """Plot the outline of a specified team's stadium using MLBAM coordinates."""
-    return await pybaseball_plotting_tools.create_stadium_plot(team, width, height)
+    @mcp_tool_wrapper
+    async def create_stadium_plot(
+        team: str = "generic", width: int = 500, height: int = 500
+    ) -> Dict[str, Any]:
+        """Plot the outline of a specified team's stadium using MLBAM coordinates."""
+        return await pybaseball_plotting_tools.create_stadium_plot(team, width, height)
 
 
 # Supplemental pybaseball tools
@@ -1007,7 +953,6 @@ async def get_top_prospects(
     return await pybaseball_supp_tools.get_top_prospects(team, player_type)
 
 
-# Add this lifespan manager after your mcp = FastMCP("baseball") line
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage the lifecycle of the MCP session manager."""

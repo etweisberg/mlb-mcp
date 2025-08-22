@@ -7,8 +7,6 @@ Refactor note:
   They are designed to be extensible to cover common pybaseball plotting use cases.
 """
 
-import base64
-import io
 from contextlib import contextmanager
 from typing import Any, Dict, List, Optional
 
@@ -26,27 +24,30 @@ from pybaseball import (
 from pybaseball.plotting import plot_bb_profile, plot_strike_zone
 
 from mlb_stats_mcp.utils.logging_config import setup_logging
+from mlb_stats_mcp.utils.s3 import upload_file_and_get_presigned_url
+import tempfile
+from pathlib import Path
 from mlb_stats_mcp.tools import pybaseball_supp_tools
 
 logger = setup_logging("pybaseball_plotting_tools")
 
 
-def _axes_to_base64(ax: matplotlib.axes.Axes) -> str:
-    """
-    Convert matplotlib Axes to base64 encoded PNG image.
-
-    Args:
-        ax: The matplotlib Axes object
-
-    Returns:
-        Base64 encoded string of the plot image
-    """
-    buffer = io.BytesIO()
-    ax.figure.savefig(buffer, format="png", bbox_inches="tight", dpi=100)
-    buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    buffer.close()
-    return f"data:image/png;base64,{image_base64}"
+def _axes_to_presigned_url(ax: matplotlib.axes.Axes) -> str:
+    """Save Axes to temp PNG, upload to S3, and return pre-signed URL."""
+    tmp_file = None
+    try:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+        tmp_file = Path(tmp.name)
+        tmp.close()
+        ax.figure.savefig(str(tmp_file), format="png", bbox_inches="tight", dpi=100)
+        url = upload_file_and_get_presigned_url(tmp_file)
+        return url
+    finally:
+        if tmp_file and tmp_file.exists():
+            try:
+                tmp_file.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 @contextmanager
@@ -100,7 +101,7 @@ async def create_strike_zone_plot(
         annotation: Column to annotate the pitches with
 
     Returns:
-        Dictionary containing plot metadata and base64 encoded image
+        Dictionary containing plot metadata and an S3 pre-signed image URL
     """
     try:
         # Determine data source
@@ -139,18 +140,18 @@ async def create_strike_zone_plot(
                 annotation=annotation,
             )
 
-        # Reduce figure size to minimize base64 size
+        # Reduce figure size
         try:
             ax.figure.set_size_inches(4, 4)
-        except Exception:
+        except (ValueError, RuntimeError):
             pass
-        plot_image = _axes_to_base64(ax)
+        plot_image = _axes_to_presigned_url(ax)
 
-        logger.debug(f"Created strike zone plot with {len(df)} pitches")
+        logger.debug("Created strike zone plot with %d pitches", len(df))
 
         return {
             "plot_type": "strike_zone",
-            "image_base64": plot_image,
+            "image_url": plot_image,
             "pitch_count": int(len(df)),
             "title": title,
             "metadata": {
@@ -168,7 +169,7 @@ async def create_strike_zone_plot(
     except Exception as e:
         error_msg = f"Error creating strike zone plot: {e!s}"
         logger.error(error_msg)
-        raise Exception(error_msg) from e
+        raise RuntimeError(error_msg) from e
 
 
 async def create_spraychart_plot(
@@ -204,7 +205,7 @@ async def create_spraychart_plot(
         height: Height of the plot
 
     Returns:
-        Dictionary containing plot metadata and base64 encoded image
+        Dictionary containing plot metadata and an S3 pre-signed image URL
     """
     try:
         # Determine data source(s)
@@ -258,17 +259,19 @@ async def create_spraychart_plot(
         # Reduce figure size
         try:
             ax.figure.set_size_inches(width / 100.0, height / 100.0)
-        except Exception:
+        except (ValueError, RuntimeError):
             pass
-        plot_image = _axes_to_base64(ax)
+        plot_image = _axes_to_presigned_url(ax)
 
         logger.debug(
-            f"Created spraychart with {len(hit_data)} hits for {team_stadium} stadium"
+            "Created spraychart with %d hits for %s stadium",
+            len(hit_data),
+            team_stadium,
         )
 
         return {
             "plot_type": "spraychart",
-            "image_base64": plot_image,
+            "image_url": plot_image,
             "hit_count": len(hit_data),
             "stadium": team_stadium,
             "title": title,
@@ -291,7 +294,7 @@ async def create_spraychart_plot(
     except Exception as e:
         error_msg = f"Error creating spraychart: {e!s}"
         logger.error(error_msg)
-        raise Exception(error_msg) from e
+        raise RuntimeError(error_msg) from e
 
 
 async def create_bb_profile_plot(
@@ -315,7 +318,7 @@ async def create_bb_profile_plot(
         parameter: Parameter to plot (launch_angle, exit_velocity, etc.)
 
     Returns:
-        Dictionary containing plot metadata and base64 encoded image
+        Dictionary containing plot metadata and an S3 pre-signed image URL
     """
     try:
         # Determine data source
@@ -365,17 +368,17 @@ async def create_bb_profile_plot(
         if not ax.get_legend():
             ax.legend()
 
-        # Save plot to base64
-        plot_image = _axes_to_base64(ax)
+        # Save plot and upload to S3
+        plot_image = _axes_to_presigned_url(ax)
 
         # Clean up
         plt.close()
 
-        logger.debug(f"Created batted ball profile plot with parameter: {parameter}")
+        logger.debug("Created batted ball profile plot with parameter: %s", parameter)
 
         return {
             "plot_type": "bb_profile",
-            "image_base64": plot_image,
+            "image_url": plot_image,
             "bb_count": len(df),
             "parameter": parameter,
             "metadata": {
@@ -396,7 +399,7 @@ async def create_bb_profile_plot(
     except Exception as e:
         error_msg = f"Error creating batted ball profile plot: {e!s}"
         logger.error(error_msg)
-        raise Exception(error_msg) from e
+        raise RuntimeError(error_msg) from e
 
 
 async def create_teams_plot(
@@ -421,7 +424,7 @@ async def create_teams_plot(
         title: Title for the chart
 
     Returns:
-        Dictionary containing plot metadata and base64 encoded image
+        Dictionary containing plot metadata and an S3 pre-signed image URL
     """
     try:
         if start_season is None:
@@ -443,7 +446,7 @@ async def create_teams_plot(
                 from pybaseball import team_pitching as _team_pitching  # type: ignore
 
                 df = _team_pitching(start_season, end_season, league=league, ind=ind)
-        except Exception:
+        except ImportError:
             # Fallback to our async supplemental tools which return dicts
             if dataset == "batting":
                 data = await pybaseball_supp_tools.get_team_batting(
@@ -471,17 +474,17 @@ async def create_teams_plot(
         # Get the current axes object after plotting
         ax = plt.gca()
 
-        # Save plot to base64
-        plot_image = _axes_to_base64(ax)
+        # Save plot and upload to S3
+        plot_image = _axes_to_presigned_url(ax)
 
         # Clean up
         plt.close()
 
-        logger.debug(f"Created team plot: {x_axis} vs {y_axis}")
+        logger.debug("Created team plot: %s vs %s", x_axis, y_axis)
 
         return {
             "plot_type": "teams",
-            "image_base64": plot_image,
+            "image_url": plot_image,
             "team_count": int(len(df)),
             "x_axis": x_axis,
             "y_axis": y_axis,
@@ -499,7 +502,7 @@ async def create_teams_plot(
     except Exception as e:
         error_msg = f"Error creating teams plot: {e!s}"
         logger.error(error_msg)
-        raise Exception(error_msg) from e
+        raise RuntimeError(error_msg) from e
 
 
 async def create_stadium_plot(
@@ -514,7 +517,7 @@ async def create_stadium_plot(
         height: Height of the plot
 
     Returns:
-        Dictionary containing plot metadata and base64 encoded image
+        Dictionary containing plot metadata and an S3 pre-signed image URL
     """
     try:
         with no_show():
@@ -524,15 +527,15 @@ async def create_stadium_plot(
             # Ensure figure size
             ax.figure.set_size_inches(width / 100.0, height / 100.0)
 
-        plot_image = _axes_to_base64(ax)
+        plot_image = _axes_to_presigned_url(ax)
 
         return {
             "plot_type": "stadium",
-            "image_base64": plot_image,
+            "image_url": plot_image,
             "stadium": team,
             "metadata": {"width": width, "height": height},
         }
     except Exception as e:
         error_msg = f"Error creating stadium plot: {e!s}"
         logger.error(error_msg)
-        raise Exception(error_msg) from e
+        raise RuntimeError(error_msg) from e

@@ -435,7 +435,9 @@ Create detailed markdown game analysis with:
 
 
 def cd_statistical_deep_dive(
-    stat_category: str, season: Optional[int] = None, min_qualifier: Optional[int] = None
+    stat_category: str,
+    season: Optional[int] = None,
+    min_qualifier: Optional[int] = None,
 ) -> str:
     """
     Generate an in-depth statistical analysis report as an artifact for Claude Desktop.
@@ -584,8 +586,8 @@ def web_ui_player_plots(player_name: str, season: Optional[int] = None) -> str:
 
 Your response should be a list of plot objects in this exact JSON format:
 [
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
   ...
 ]
 
@@ -627,15 +629,17 @@ Based on player type, create these specific plots:
 {player_name}", colorby="events")
 
 **CRITICAL INSTRUCTIONS:**
-- Each plotting function returns a response with image_base64 field containing the base64 string
-- Extract the image_base64 value and use it as plot_base64 in your response
+- Each plotting function returns a response with image_url field containing a pre-signed S3 URL
+- Extract the image_url value and use it as plot_url in your response
 - Create descriptive, specific titles for each plot
 - Only return the JSON list format specified above
 - Do not include any explanatory text, only the JSON list of plot objects
 - Ensure all plots use Statcast data for accuracy and detail"""
 
 
-def web_ui_team_comparison_plots(team1: str, team2: str, focus_area: str = "overall") -> str:
+def web_ui_team_comparison_plots(
+    team1: str, team2: str, focus_area: str = "overall"
+) -> str:
     """
     Generate structured plot data for team comparison in Web UI format.
 
@@ -651,8 +655,8 @@ def web_ui_team_comparison_plots(team1: str, team2: str, focus_area: str = "over
 
 Your response should be a list of plot objects in this exact JSON format:
 [
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
   ...
 ]
 
@@ -693,8 +697,8 @@ Pitching Performance")
 3. create_teams_plot(recent_data, x_axis="wins_last_10", y_axis="run_differential_last_10", title="{team1} vs {team2} - Last 10 Games")
 
 **CRITICAL INSTRUCTIONS:**
-- Each plotting function returns a response with image_base64 field containing the base64 string
-- Extract the image_base64 value and use it as plot_base64 in your response
+- Each plotting function returns a response with image_url field containing a pre-signed S3 URL
+- Extract the image_url value and use it as plot_url in your response
 - Create descriptive titles that clearly indicate which teams are being compared
 - Use appropriate statistical measures for the x_axis and y_axis parameters
 - Only return the JSON list format specified above
@@ -719,8 +723,8 @@ def web_ui_game_analysis_plots(date: str, team1: str, team2: str) -> str:
 
 Your response should be a list of plot objects in this exact JSON format:
 [
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
   ...
 ]
 
@@ -760,8 +764,8 @@ Pitch Locations • {date}", colorby="pitch_type")
 Strike Zone by Outcome • {date}", colorby="events")
 
 **CRITICAL INSTRUCTIONS:**
-- Each plotting function returns a response with image_base64 field containing the base64 string
-- Extract the image_base64 value and use it as plot_base64 in your response
+- Each plotting function returns a response with image_url field containing a pre-signed S3 URL
+- Extract the image_url value and use it as plot_url in your response
 - Create descriptive titles that include the teams and date for context
 - Only return the JSON list format specified above
 - Do not include any explanatory text, only the JSON list of plot objects
@@ -769,7 +773,9 @@ Strike Zone by Outcome • {date}", colorby="events")
 
 
 def web_ui_statistical_analysis_plots(
-    stat_category: str, season: Optional[int] = None, min_qualifier: Optional[int] = None
+    stat_category: str,
+    season: Optional[int] = None,
+    min_qualifier: Optional[int] = None,
 ) -> str:
     """
     Generate structured plot data for statistical analysis in Web UI format.
@@ -788,8 +794,8 @@ def web_ui_statistical_analysis_plots(
 
 Your response should be a list of plot objects in this exact JSON format:
 [
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
   ...
 ]
 
@@ -836,8 +842,8 @@ Create these analysis plots based on the statistical category:
 3. create_teams_plot(team_data, x_axis="team_{stat_category}", y_axis="run_differential", title="Team {stat_category.title()} vs Run Differential")
 
 **CRITICAL INSTRUCTIONS:**
-- Each plotting function returns a response with image_base64 field containing the base64 string
-- Extract the image_base64 value and use it as plot_base64 in your response
+- Each plotting function returns a response with image_url field containing a pre-signed S3 URL
+- Extract the image_url value and use it as plot_url in your response
 - Create descriptive titles that clearly indicate the statistical focus and time period
 - Always use get_meta() to validate parameters before making API calls
 - Include statGroup parameter when using get_league_leader_data()
@@ -846,7 +852,9 @@ Create these analysis plots based on the statistical category:
 - Prioritize Statcast correlations and expected vs actual performance analysis"""
 
 
-def web_ui_season_trends_plots(focus_area: str = "league", season: Optional[int] = None) -> str:
+def web_ui_season_trends_plots(
+    focus_area: str = "league", season: Optional[int] = None
+) -> str:
     """
     Generate structured plot data for season trend analysis in Web UI format.
 
@@ -863,8 +871,8 @@ def web_ui_season_trends_plots(focus_area: str = "league", season: Optional[int]
 
 Your response should be a list of plot objects in this exact JSON format:
 [
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
-  {{"plot_base64": "<BASE64_STRING>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
+  {{"plot_url": "<IMAGE_URL>", "plot_title": "<TITLE>"}},
   ...
 ]
 
@@ -920,8 +928,8 @@ Create trend analysis plots based on focus area:
 Top Performers {season_text}")
 
 **CRITICAL INSTRUCTIONS:**
-- Each plotting function returns a response with image_base64 field containing the base64 string
-- Extract the image_base64 value and use it as plot_base64 in your response
+- Each plotting function returns a response with image_url field containing a pre-signed S3 URL
+- Extract the image_url value and use it as plot_url in your response
 - Create descriptive titles that clearly indicate the trend focus and time period
 - Always use get_meta() to validate parameters before making API calls
 - Only return the JSON list format specified above

@@ -36,3 +36,4 @@ jobs:
           uv run pytest -v -k "not (test_get_pitching_stats_bref or test_get_pitching_stats_range or test_get_schedule_and_record or test_get_player_splits)"
         env:
           SHOW_IMAGE: false
+          ENABLE_PLOTTING: false

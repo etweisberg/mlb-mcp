@@ -5,7 +5,7 @@ startCommand:
   commandFunction:
     # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
     |-
-    (config) => ({ command: 'uv', args: ['run','python','-m','mlb_stats_mcp.server'], env: Object.assign({}, config.logLevel?{MLB_STATS_LOG_LEVEL: config.logLevel}:{}, config.logFile?{MLB_STATS_LOG_FILE: config.logFile}:{}) })
+    (config) => ({ command: 'uv', args: ['run','python','-m','mlb_stats_mcp.server'], env: Object.assign({ ENABLE_PLOTTING: 'false' }, config.logLevel?{MLB_STATS_LOG_LEVEL: config.logLevel}:{}, config.logFile?{MLB_STATS_LOG_FILE: config.logFile}:{}) })
   configSchema:
     # JSON Schema defining the configuration options for the MCP.
     type: object

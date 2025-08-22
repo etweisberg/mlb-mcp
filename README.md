@@ -111,7 +111,6 @@ Replace the following placeholders:
 
 - `mcp[cli]` - Machine-Learning Chat Protocol for tool definition
 - `mlb-statsapi` - Python wrapper for the MLB Stats API
-- `httpx` - HTTP client for making API requests
 - `pytest` and `pytest-asyncio` - Test frameworks
 - `uv` - Fast Python package manager and installer
 
