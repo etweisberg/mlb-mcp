@@ -4,6 +4,7 @@ MCP server implementation for the baseball project with MLB Stats API integratio
 
 import contextlib
 import inspect
+import os
 import sys
 from typing import Any, Dict, Optional
 
@@ -934,12 +935,13 @@ def main():
     # Check if running with HTTP transport
     if "--http" in sys.argv:
         logger.info("Starting MLB Stats MCP server over HTTP with FastAPI")
+        port = int(os.environ.get("PORT", 8081))
         uvicorn.run(
             "mlb_stats_mcp.server:create_fastapi_app",
             host="0.0.0.0",  # This binds to all interfaces
-            port=8000,
+            port=port,
             log_level="info",
-            reload=True,
+            reload=False,
             factory=True,
         )
     else:

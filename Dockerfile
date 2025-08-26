@@ -34,8 +34,8 @@ RUN uv pip install --system -e .
 # Patch data for pybaseball
 RUN uv run python mlb_stats_mcp/utils/scripts/data_download.py
 
-# Expose port for HTTP transport
-EXPOSE 8000
+# Expose port for HTTP transport (Smithery provides $PORT, default 8081)
+EXPOSE 8081
 
 # Run the MCP server with HTTP transport
 CMD ["python", "-m", "mlb_stats_mcp.server", "--http"]
