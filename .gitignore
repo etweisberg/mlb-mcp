@@ -40,3 +40,4 @@ ENV/
 logs/*
 CLAUDE.md
 supp_docs/*
+.DS_Store
