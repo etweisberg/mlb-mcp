@@ -345,7 +345,8 @@ async def get_statcast_batter_exitvelo_barrels(
         )
 
         # Call pybaseball's statcast_batter_exitvelo_barrels function
-        df = statcast_batter_exitvelo_barrels(year, minBBE)
+        # pybaseball expects "q" (qualified) as the default, not None
+        df = statcast_batter_exitvelo_barrels(year, minBBE if minBBE is not None else "q")
 
         if len(df) == 0:
             raise Exception("No statcast data found")
@@ -401,7 +402,7 @@ async def get_statcast_pitcher_exitvelo_barrels(
         )
 
         # Call pybaseball's statcast_pitcher_exitvelo_barrels function
-        df = statcast_pitcher_exitvelo_barrels(year, minBBE)
+        df = statcast_pitcher_exitvelo_barrels(year, minBBE if minBBE is not None else "q")
 
         if len(df) == 0:
             raise Exception("No statcast data found")
@@ -459,7 +460,7 @@ async def get_statcast_batter_expected_stats(
         )
 
         # Call pybaseball's statcast_batter_expected_stats function
-        df = statcast_batter_expected_stats(year, minPA)
+        df = statcast_batter_expected_stats(year, minPA if minPA is not None else "q")
 
         if len(df) == 0:
             raise Exception("No statcast data found")
@@ -515,7 +516,7 @@ async def get_statcast_pitcher_expected_stats(
         )
 
         # Call pybaseball's statcast_pitcher_expected_stats function
-        df = statcast_pitcher_expected_stats(year, minPA)
+        df = statcast_pitcher_expected_stats(year, minPA if minPA is not None else "q")
 
         if len(df) == 0:
             raise Exception("No statcast data found")
