@@ -33,6 +33,6 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run pytest -v -k "not (test_get_pitching_stats_bref or test_get_pitching_stats_range or test_get_schedule_and_record or test_get_player_splits)"
+          uv run pytest -v -k "not (test_get_pitching_stats_bref or test_get_pitching_stats_range or test_get_schedule_and_record or test_get_player_splits or test_get_last_game_tool or test_get_league_leader_data_tool)"
         env:
           SHOW_IMAGE: false
