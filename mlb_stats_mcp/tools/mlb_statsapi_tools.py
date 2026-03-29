@@ -201,7 +201,8 @@ async def get_standings(
         logger.debug(f"Retrieving standings with params: {kwargs}")
         result = statsapi.standings_data(**kwargs)
         logger.debug(f"Retrieved standings data for {standings_types}")
-        return result
+        # MCP requires string keys in dicts
+        return {str(k): v for k, v in result.items()}
     except Exception as e:
         error_msg = f"Error retrieving standings: {e!s}"
         logger.error(error_msg)
@@ -234,7 +235,7 @@ async def get_team_roster(
         logger.debug(f"Retrieving team roster for team ID: {team_id}")
         result = statsapi.roster(team_id, roster_type, season, date)
         logger.debug(f"Retrieved team roster data for team ID: {team_id}")
-        return result
+        return {"roster": result, "team_id": team_id, "roster_type": roster_type, "season": season}
     except Exception as e:
         error_msg = f"Error retrieving team roster for team ID {team_id}: {e!s}"
         logger.error(error_msg)
@@ -412,6 +413,8 @@ async def get_meta(type_name: str, fields: Optional[str] = None) -> Dict[str, An
             result = statsapi.meta(type_name)
 
         logger.debug(f"Retrieved metadata for type: {type_name}")
+        if isinstance(result, list):
+            return {"metadata": result, "type": type_name}
         return result
     except Exception as e:
         error_msg = f"Error retrieving metadata for type {type_name}: {e!s}"
