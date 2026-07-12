@@ -41,6 +41,7 @@ def _convert_dataframe_to_dict(df: pd.DataFrame) -> Dict[str, Any]:
 
     try:
         df_clean = df.copy()
+        df_clean = df_clean.reset_index()
         df_clean = df_clean.where(pd.notnull(df_clean), None)
         df_clean = df_clean.replace("", None)
         records = df_clean.to_dict(orient="records")
