@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/etweisberg-mlb-mcp-badge.png)](https://mseep.ai/app/etweisberg-mlb-mcp)
+
 # MLB Stats MCP Server
 
 [![Tests](https://github.com/etweisberg/mcp-baseball-stats/actions/workflows/test.yml/badge.svg)](https://github.com/etweisberg/baseball/mcp-baseball-stats/workflows/test.yml)
