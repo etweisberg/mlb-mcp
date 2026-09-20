@@ -7,19 +7,23 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 from pybaseball import (
     get_splits,
-    pitching_stats,
     pitching_stats_bref,
     pitching_stats_range,
     playerid_lookup,
     playerid_reverse_lookup,
     schedule_and_record,
     standings,
-    team_batting,
-    team_fielding,
-    team_pitching,
     top_prospects,
 )
 
+# pybaseball's FanGraphs functions scrape a page FanGraphs retired (HTTP 403),
+# so these come from our own client for the current JSON API instead.
+from mlb_stats_mcp.utils.fangraphs_api import (
+    pitching_stats,
+    team_batting,
+    team_fielding,
+    team_pitching,
+)
 from mlb_stats_mcp.utils.logging_config import setup_logging
 
 logger = setup_logging("pybaseball_supp_tools")
@@ -150,19 +154,13 @@ async def get_pitching_stats(
             f"{end_season or start_season}, league: {league}, qual: {qual}, ind: {ind}"
         )
 
-        try:
-            df = pitching_stats(
-                start_season=start_season,
-                end_season=end_season or start_season,
-                league=league.upper(),
-                qual=qual,
-                ind=ind,
-            )
-        except Exception as e:
-            logger.error(
-                f"[BREAKPOINT] error: {e} with args: "
-                f"({start_season}, {end_season}, {league}, {qual}, {ind})"
-            )
+        df = pitching_stats(
+            start_season=start_season,
+            end_season=end_season or start_season,
+            league=league,
+            qual=qual,
+            ind=ind,
+        )
 
         if len(df) == 0:
             raise Exception("No pitching stats data found")
