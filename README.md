@@ -77,7 +77,29 @@ Use `ANTHROPIC_API_KEY` to enable MCP Server.
 The MLB Stats MCP Server supports configurable logging via environment variables:
 
 - `MLB_STATS_LOG_LEVEL` - Sets the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-- `MLB_STATS_LOG_FILE` - Path to log file (if not set, logs to stdout)
+- `MLB_STATS_LOG_FILE` - Path to log file (if not set, logs to stderr)
+
+Logs go to stderr rather than stdout on purpose: under the stdio transport,
+stdout carries the JSON-RPC stream and anything else printed there corrupts it.
+
+### HTTP Transport
+
+Run the server over HTTP with `python -m mlb_stats_mcp.server --http`, which
+listens on `$PORT` (default `8081`) and serves MCP at `/mcp`.
+
+By default the server accepts any `Host` and any `Origin`, so a remote
+deployment works out of the box. To restrict it, set either variable to a
+comma-separated list:
+
+- `MLB_STATS_ALLOWED_HOSTS` - `Host` header values to accept. Setting this
+  turns on DNS rebinding protection; requests for any other host are rejected
+  with `421`. Entries may end in `:*` to allow any port, e.g. `localhost:*`.
+- `MLB_STATS_ALLOWED_ORIGINS` - `Origin` values to accept, used both for CORS
+  and, when `MLB_STATS_ALLOWED_HOSTS` is set, to reject other origins with
+  `403`. Requests without an `Origin` header are always allowed.
+
+Set both when locking down a deployment; naming hosts alone rejects every
+browser-based client.
 
 ## Claude Desktop Integration
 

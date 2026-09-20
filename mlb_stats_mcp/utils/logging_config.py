@@ -4,14 +4,17 @@ Centralized logging configuration for the MLB Stats MCP project.
 
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables from .env file. Nothing here may write to stdout:
+# under the stdio transport stdout carries the JSON-RPC stream, and stray output
+# corrupts it, so clients fail to parse the handshake and drop the connection.
 env_path = Path(__file__).parent.parent.parent / ".env"
-print(f"Loading environment variables from {env_path}")
+print(f"Loading environment variables from {env_path}", file=sys.stderr)
 load_dotenv(env_path)
 
 
@@ -65,6 +68,6 @@ def setup_logging(logger_name: Optional[str] = None) -> logging.Logger:
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
-        logger.info(f"MLB Stats API logging configured at {log_level} level, writing to stdout")
+        logger.info(f"MLB Stats API logging configured at {log_level} level, writing to stderr")
 
     return logger

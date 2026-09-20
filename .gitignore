@@ -38,6 +38,7 @@ ENV/
 
 # misc
 logs/*
+*.log
 CLAUDE.md
 supp_docs/*
 .DS_Store

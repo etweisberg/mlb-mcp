@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from mlb_stats_mcp.prompts import prompts
 from mlb_stats_mcp.tools import (
@@ -29,8 +30,29 @@ load_dotenv()
 # Initialize logging for the server
 logger = setup_logging("mcp_server")
 
+
+def _env_list(name: str) -> list[str]:
+    """Read a comma-separated environment variable into a list of values."""
+    return [item.strip() for item in os.environ.get(name, "").split(",") if item.strip()]
+
+
+# Hosts and origins this server answers to over HTTP, both empty by default.
+ALLOWED_HOSTS = _env_list("MLB_STATS_ALLOWED_HOSTS")
+ALLOWED_ORIGINS = _env_list("MLB_STATS_ALLOWED_ORIGINS")
+
+# FastMCP turns on DNS rebinding protection whenever its host looks like
+# localhost, which is its default. That rejects every request to a remotely
+# deployed instance: the public Host header answers 421 and any browser Origin
+# answers 403. The deployment hostname is not knowable here, so only enforce the
+# check once an operator names the hosts to accept.
+_transport_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=bool(ALLOWED_HOSTS),
+    allowed_hosts=ALLOWED_HOSTS,
+    allowed_origins=ALLOWED_ORIGINS,
+)
+
 # Initialize FastMCP server
-mcp = FastMCP("baseball", stateless_http=True)
+mcp = FastMCP("baseball", stateless_http=True, transport_security=_transport_security)
 
 
 # Automatically register all prompt functions from prompts.py
@@ -921,10 +943,14 @@ def create_fastapi_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],  # Your Next.js dev server
-        allow_credentials=True,
+        allow_origins=ALLOWED_ORIGINS or ["*"],
+        # No cookie-based auth here, and allowing credentials from any origin
+        # would let any site issue authenticated requests on a user's behalf.
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
+        # Browser clients need to read the session id to continue a session.
+        expose_headers=["Mcp-Session-Id"],
     )
     app.mount("/", mcp.streamable_http_app())
     return app
