@@ -6,7 +6,7 @@ authors = [
     {name = "Ethan Weisberg", email = "ethaniweisberg@gmail.com"},
 ]
 dependencies = [
-    "mcp[cli]>=1.23.0",
+    "mcp[cli]>=1.23.0,<2",
     "httpx",
     "python-dotenv",
     "mlb-statsapi",
